@@ -1,17 +1,35 @@
 package android.larrimorea.snapchat;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.File;
+
 
 public class MainActivity extends ActionBarActivity {
+    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    private Uri fileURI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File imagesFolder = new File(Environment.getExternalStorageDirectory(), "MyImages");
+        imagesFolder.mkdirs();
+        File image = new File(imagesFolder, "image1.jpg");
+
+        fileURI = Uri.fromFile(image);
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileURI);
+        startActivityForResult(intent, 0);
     }
 
     @Override
