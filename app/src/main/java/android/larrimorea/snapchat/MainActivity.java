@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -22,7 +23,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File imagesFolder = new File(Environment.getExternalStorageDirectory(), "MyImages");
+        File imagesFolder = new File(Environment.getRootDirectory(), "MyImages");
         imagesFolder.mkdirs();
         File image = new File(imagesFolder, "image1.jpg");
 
@@ -30,6 +31,23 @@ public class MainActivity extends ActionBarActivity {
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, fileURI);
         startActivityForResult(intent, 0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE){
+            if(resultCode == RESULT_OK){
+                Toast.makeText(this, "Image Saved!", Toast.LENGTH_LONG).show();
+            }else if(resultCode == RESULT_CANCELED){
+                Toast.makeText(this, "Image capture Canceled!", Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(this, "Image capture Failed!", Toast.LENGTH_LONG).show();
+            }
+        }
+
+
+        //Generated code below commented out
+        //super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
