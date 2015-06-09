@@ -26,14 +26,17 @@ public class TakePicture extends Activity {
         setContentView(R.layout.take_picture);
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File imagesFolder = new File(Environment.getRootDirectory(), "MyImages");
-        imagesFolder.mkdirs();
-        File image = new File(imagesFolder, "image1.jpg");
+       // File imagesFolder = new File(Environment.getRootDirectory(), "MyImages");
 
-        fileURI = Uri.fromFile(image);
+        //imagesFolder.mkdirs();
+        //File image = new File(imagesFolder, "image1.jpg");
 
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileURI);
-        startActivityForResult(intent, 0);
+        //fileURI = Uri.fromFile(image);
+
+        //intent.putExtra(MediaStore.EXTRA_OUTPUT, fileURI);
+        if(intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+        }
     }
 
     @Override
@@ -50,7 +53,7 @@ public class TakePicture extends Activity {
 
 
         //Generated code below commented out
-        //super.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
