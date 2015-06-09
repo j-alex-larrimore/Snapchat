@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -20,10 +21,19 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        String[] arrayStrings = new String[]{
+                "Inbox",
+                "Take a Picture",
+                "Send a Picture"
+        };
+
         progressBar = (ProgressBar)findViewById(R.id.progressBar);
         listView = (ListView)findViewById(R.id.listView);
 
         listView.setEmptyView(progressBar);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+        listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

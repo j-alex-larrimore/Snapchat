@@ -1,7 +1,9 @@
 package android.larrimorea.snapchat;
 
+import android.app.Activity;
+
 /**
  * Created by Alex on 6/9/2015.
  */
-public class SendPicture {
+public class SendPicture extends Activity {
 }
