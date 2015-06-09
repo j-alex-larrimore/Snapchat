@@ -1,16 +1,23 @@
 package android.larrimorea.snapchat;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Alex on 6/9/2015.
@@ -18,7 +25,10 @@ import java.io.File;
 
 public class TakePicture extends Activity {
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-    private Uri fileURI;
+    //private MediaScannerConnection msc;
+    static final int REQUEST_TAKE_PHOTO = 1;
+    //private Uri fileURI;
+    String mCurrentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +45,18 @@ public class TakePicture extends Activity {
 
         //intent.putExtra(MediaStore.EXTRA_OUTPUT, fileURI);
         if(intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            File photoFile = null;
+            try{
+                photoFile = createImageFile();
+                mCurrentPhotoPath = photoFile.getAbsolutePath();
+            }catch (IOException ex){
+                //Error
+            }
+
+            if(photoFile != null){
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            }
         }
     }
 
@@ -43,6 +64,7 @@ public class TakePicture extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE){
             if(resultCode == RESULT_OK){
+                galleryAddPic();
                 Toast.makeText(this, "Image Saved!", Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){
                 Toast.makeText(this, "Image capture Canceled!", Toast.LENGTH_LONG).show();
@@ -56,25 +78,26 @@ public class TakePicture extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private File createImageFile() throws IOException{
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timestamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+
+        return image;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    private void galleryAddPic(){
+        //Code below scans media and makes it show correctly
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
+        //mediaScanIntent.setData(contentUri);
+        sendBroadcast(mediaScanIntent);
     }
+
+
 }
