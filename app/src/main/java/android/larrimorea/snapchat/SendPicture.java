@@ -3,7 +3,10 @@ package android.larrimorea.snapchat;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -18,10 +21,12 @@ import java.util.Set;
  */
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
+    private List<String> arrayStrings  = new ArrayList<String>();
+    private ArrayAdapter<String> mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+    private IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        List<String> arrayStrings  = new ArrayList<String>();
-        ArrayAdapter<String> mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_image);
@@ -47,6 +52,8 @@ public class SendPicture extends Activity {
             }
         }
 
+        mBluetoothAdapter.startDiscovery();
+
     }
 
     @Override
@@ -63,4 +70,20 @@ public class SendPicture extends Activity {
 
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver(){
+        public void onReceive(Context context, Intent intent){
+            String action = intent.getAction();
+            if(BluetoothDevice.ACTION_FOUND.equals(action)){
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+            }
+        }
+    };
 }
