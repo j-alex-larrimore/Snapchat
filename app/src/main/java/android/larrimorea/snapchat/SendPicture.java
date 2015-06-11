@@ -56,7 +56,7 @@ public class SendPicture extends Activity {
             }
         }
 
-        mBluetoothAdapter.startDiscovery();
+        registerReceiver(mReceiver, filter);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class SendPicture extends Activity {
             if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                Toast.makeText(context, "Device found!", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Device found!" + device.getName(), Toast.LENGTH_LONG).show();
 
 
             }
