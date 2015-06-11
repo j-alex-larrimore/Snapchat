@@ -75,10 +75,22 @@ public class SendPicture extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onResume() {
+        mBluetoothAdapter.startDiscovery();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
         //NEED TO CALL THIS FUNCTION WHEN WE FIND ALL DEVICES
         mBluetoothAdapter.cancelDiscovery();
         Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+
         unregisterReceiver(mReceiver);
         super.onDestroy();
     }
