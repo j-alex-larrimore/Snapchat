@@ -10,8 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -21,22 +24,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.LogRecord;
 
 /**
  * Created by Alex on 6/9/2015.
  */
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
+    private int MESSAGE_READ = 2;
     private List<String> arrayStrings  = new ArrayList<String>();
     private ArrayAdapter<String> mArrayAdapter;
     private IntentFilter filter;
     private BluetoothAdapter mBluetoothAdapter;
+    private Handler mHandler;
+    protected ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_image);
 
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+
+            }
+        };
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -132,6 +145,8 @@ public class SendPicture extends Activity {
             }
         }
 
+
+
         public void cancel(){
             try{
                 mmServerSocket.close();
@@ -162,7 +177,35 @@ public class SendPicture extends Activity {
         }
 
         public void run(){
-            
+            byte[] buffer = new byte[1024];
+            int bytes;
+
+            while(true){
+                try{
+                    bytes = mmInStream.read(buffer);
+                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                }catch(IOException e){
+                    break;
+                }
+            }
+        }
+
+        //Call from main activity to send data to remote device
+        public void write(byte[] bytes){
+            try{
+                mmOutStream.write(bytes);
+            }catch(IOException e){
+
+            }
+        }
+
+            //Call from the main activity to shutdown the connection
+        public void cancel(){
+            try{
+                mmSocket.close();
+            }catch(IOException e){
+
+            }
         }
     }
 
