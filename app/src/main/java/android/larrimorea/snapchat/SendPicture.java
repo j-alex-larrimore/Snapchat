@@ -43,6 +43,7 @@ public class SendPicture extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_image);
+        listView = (ListView)findViewById(R.id.listViewSend);
 
         mHandler = new Handler() {
             @Override
@@ -51,6 +52,8 @@ public class SendPicture extends Activity {
             }
         };
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+        listView.setAdapter(mArrayAdapter);
+
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -215,7 +218,7 @@ public class SendPicture extends Activity {
             if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                Toast.makeText(context, "Device found!" + device.getName(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "Device found!" + device.getName(), Toast.LENGTH_LONG).show();
             }
         }
     };
