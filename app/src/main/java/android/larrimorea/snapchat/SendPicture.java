@@ -22,16 +22,20 @@ import java.util.Set;
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
     private List<String> arrayStrings  = new ArrayList<String>();
-    private ArrayAdapter<String> mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
-    private IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+    private ArrayAdapter<String> mArrayAdapter;
+    private IntentFilter filter;
+    private BluetoothAdapter mBluetoothAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_image);
 
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+        filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+
         if(mBluetoothAdapter == null){
             Log.i("SendPicture", "Bluetooth Not Enabled");
         }
@@ -53,7 +57,6 @@ public class SendPicture extends Activity {
         }
 
         mBluetoothAdapter.startDiscovery();
-
     }
 
     @Override
@@ -73,6 +76,9 @@ public class SendPicture extends Activity {
 
     @Override
     protected void onDestroy() {
+        //NEED TO CALL THIS FUNCTION WHEN WE FIND ALL DEVICES
+        mBluetoothAdapter.cancelDiscovery();
+        Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
         unregisterReceiver(mReceiver);
         super.onDestroy();
     }
@@ -83,6 +89,9 @@ public class SendPicture extends Activity {
             if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                Toast.makeText(context, "Device found!", Toast.LENGTH_LONG).show();
+
+
             }
         }
     };
