@@ -9,10 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -51,8 +54,20 @@ public class SendPicture extends Activity {
 
             }
         };
-        mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+        //mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+        PicAdapter adapter = new PicAdapter(this, BlogPostParser.get().posts);
         listView.setAdapter(mArrayAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getApplicationContext(), BlogWebActivity.class);
+                Uri blogUri = Uri.parse(BlogPostParser.get().posts.get(position).url);
+                intent.setData(blogUri);
+
+                startActivity(intent);
+            }
+        });
 
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
