@@ -74,7 +74,7 @@ public class TakePicture extends Activity {
         }
 
 
-        //Generated code below commented out
+
         super.onActivityResult(requestCode, resultCode, data);
     }
 
