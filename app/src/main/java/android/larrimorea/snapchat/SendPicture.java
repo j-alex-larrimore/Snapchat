@@ -54,17 +54,14 @@ public class SendPicture extends Activity {
 
             }
         };
-        //mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
-        PicAdapter adapter = new PicAdapter(this, BlogPostParser.get().posts);
+        mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
+
         listView.setAdapter(mArrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), BlogWebActivity.class);
-                Uri blogUri = Uri.parse(BlogPostParser.get().posts.get(position).url);
-                intent.setData(blogUri);
-
+                Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
                 startActivity(intent);
             }
         });

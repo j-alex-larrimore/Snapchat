@@ -23,11 +23,9 @@ public class PicAdapter extends ArrayAdapter<Image> {
         Image image = getItem(position);
 
 
-        if(convertView == null){
+        if(convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
         }
-
-
 
         //TextView textView = (TextView)convertView.findViewById(android.R.id.text1);
         //textView.setText(post.title);
