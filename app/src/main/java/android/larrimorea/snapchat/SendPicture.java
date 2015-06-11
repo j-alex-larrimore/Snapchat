@@ -62,6 +62,9 @@ public class SendPicture extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
+                Context context = getApplicationContext();
+                String str = (String)mArrayAdapter.getItem(position);
+                Toast.makeText(context, "Clicked -" + str, Toast.LENGTH_LONG).show();
                 startActivity(intent);
             }
         });

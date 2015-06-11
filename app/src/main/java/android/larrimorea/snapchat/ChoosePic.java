@@ -30,6 +30,7 @@ public class ChoosePic extends Activity{
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
+                //intent.putExtra(Intent.EXTRA_TEXT, )
                 startActivity(intent);
             }
         });

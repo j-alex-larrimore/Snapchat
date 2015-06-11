@@ -31,7 +31,13 @@
         </activity>
 
         <activity
-            android:name=".TakePicture"
+        android:name=".TakePicture"
+        android:label="@string/app_name">
+
+    </activity>
+
+        <activity
+            android:name=".ChoosePic"
             android:label="@string/app_name">
 
         </activity>
