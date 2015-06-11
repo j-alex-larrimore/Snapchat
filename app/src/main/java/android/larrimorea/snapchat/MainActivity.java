@@ -59,6 +59,8 @@ public class MainActivity extends Activity {
             }
         });
 
+
+        //0 instead of a number of seconds means that this android will be permanently set to discoverable
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
         startActivity(discoverableIntent);
