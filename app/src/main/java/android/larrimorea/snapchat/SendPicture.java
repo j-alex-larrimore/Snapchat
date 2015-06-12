@@ -34,12 +34,13 @@ import java.util.logging.LogRecord;
  */
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
-    private int MESSAGE_READ = 2;
+    private static int MESSAGE_READ = 2;
     private List<String> arrayStrings  = new ArrayList<String>();
     private ArrayAdapter<String> mArrayAdapter;
     private IntentFilter filter;
-    private BluetoothAdapter mBluetoothAdapter;
-    private Handler mHandler;
+    private static BluetoothAdapter mBluetoothAdapter;
+    private static Handler mHandler;
+    public static UUID myUUID;
     protected ListView listView;
     private static Uri selectedPic = null;
     private static String targetDevice = null;
@@ -49,7 +50,9 @@ public class SendPicture extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_image);
         listView = (ListView)findViewById(R.id.listViewSend);
-
+        AcceptThread thread = new AcceptThread();
+        thread.run();
+        
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -132,17 +135,17 @@ public class SendPicture extends Activity {
         super.onDestroy();
     }
 
-    private class AcceptThread extends Thread{
+    public class AcceptThread extends Thread{
         private final BluetoothServerSocket mmServerSocket;
 
         public AcceptThread(){
             BluetoothServerSocket temp = null;
 
             //Got this uuid from using a random UUID generator online. Students should generate their own.
-            UUID id = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
+            myUUID = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
             try{
-                temp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("name", id);
-
+                temp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("name", myUUID);
+                Toast.makeText(getApplicationContext(), "AcceptThread", Toast.LENGTH_LONG).show();
             }catch (IOException e){
 
             }
@@ -171,6 +174,47 @@ public class SendPicture extends Activity {
             try{
                 mmServerSocket.close();
             }catch(IOException e){
+
+            }
+        }
+    }
+
+    private class ConnectThread extends Thread{
+        private final BluetoothSocket mmSocket;
+        private final BluetoothDevice mmDevice;
+
+        public ConnectThread(BluetoothDevice device){
+            BluetoothSocket temp = null;
+            mmDevice = device;
+
+            try{
+                temp = device.createRfcommSocketToServiceRecord(myUUID);
+            }catch(IOException e){
+
+            }
+            mmSocket = temp;
+        }
+
+        public void run(){
+            mBluetoothAdapter.cancelDiscovery();
+
+            try{
+                mmSocket.connect();
+            }catch(IOException connectException){
+                try{
+                    mmSocket.close();
+                }catch(IOException closeException){
+
+                }
+                return;
+            }
+            ConnectedThread ct = new ConnectedThread(mmSocket);
+        }
+
+        public void cancel(){
+            try{
+                mmSocket.close();
+            }catch(IOException closeException){
 
             }
         }

@@ -65,5 +65,7 @@ public class MainActivity extends Activity {
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
         startActivity(discoverableIntent);
 
+
+       // SendPicture.AcceptThread.start();
     }
 }
