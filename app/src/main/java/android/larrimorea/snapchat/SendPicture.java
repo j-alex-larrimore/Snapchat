@@ -41,6 +41,8 @@ public class SendPicture extends Activity {
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     protected ListView listView;
+    private static Uri selectedPic = null;
+    private static String targetDevice = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +64,9 @@ public class SendPicture extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
-                Context context = getApplicationContext();
                 String str = (String)mArrayAdapter.getItem(position);
-                Toast.makeText(context, "Clicked -" + str, Toast.LENGTH_LONG).show();
+                targetDevice = str;
+                Toast.makeText(getApplicationContext(), "Clicked -" + str, Toast.LENGTH_LONG).show();
                 startActivity(intent);
             }
         });
@@ -237,4 +239,20 @@ public class SendPicture extends Activity {
             }
         }
     };
+
+    public static void setPicture(Uri pic){
+        selectedPic = pic;
+    }
+
+    public static Uri getPicture(){
+        return selectedPic;
+    }
+
+    public static void setTargetDevice(String target){
+        targetDevice = target;
+    }
+
+    public static String getTargetDevice(){
+        return targetDevice;
+    }
 }

@@ -18,14 +18,14 @@ public class PicAdapter extends ArrayAdapter<Image> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Image image = getItem(position);
+        //Image image = getItem(position);
 
 
         if(convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
         }
 
-        ImageView imageView = (ImageView)convertView.findViewById(R.id.imageView);
+        //ImageView imageView = (ImageView)convertView.findViewById(R.id.imageView);
 
         //TextView textView = (TextView)convertView.findViewById(android.R.id.text1);
         //textView.setText(post.title);

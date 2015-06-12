@@ -27,16 +27,19 @@ public class ChoosePic extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.choose_pic);
 
-        listView = (ListView)findViewById(R.id.listViewChoose);
-        //Intent intent = getIntent();
-        PicAdapter adapter = new PicAdapter(this, getPics());
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-        });*/
-
+//        listView = (ListView)findViewById(R.id.listViewChoose);
+//        //Intent intent = getIntent();
+//        PicAdapter adapter = new PicAdapter(this, getPics());
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//
+//            }
+//        });
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        startActivityForResult(intent, READ_REQUEST_CODE);
 
     }
 
@@ -44,10 +47,7 @@ public class ChoosePic extends Activity{
     protected void onResume() {
         //performFileSearch();
         //public static void performFileSearch(){
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-        startActivityForResult(intent, READ_REQUEST_CODE);
+
         //}
         super.onResume();
     }
@@ -61,16 +61,19 @@ public class ChoosePic extends Activity{
                     uri = data.getData();
                    // Log.i(TAG, "Uri: " + uri.toString());
                    // showImage(uri);
+                    SendPicture.setPicture(uri);
                 }
-                Toast.makeText(this, "Picture Search Success!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Picture Search Success!" + SendPicture.getTargetDevice() + " " + uri.toString(), Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){
                 Toast.makeText(this, "Picture Search Canceled!", Toast.LENGTH_LONG).show();
             }else{
                 Toast.makeText(this, "Picture Search Failed!", Toast.LENGTH_LONG).show();
             }
         }
+        Intent intent = new Intent(getApplicationContext(), SendPicture.class);
+        startActivity(intent);
 
-        super.onActivityResult(requestCode, resultCode, data);
+        //super.onActivityResult(requestCode, resultCode, data);
     }
 
     public static ArrayList<Image> getPics(){
