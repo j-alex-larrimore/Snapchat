@@ -3,31 +3,21 @@ package android.larrimorea.snapchat;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.logging.LogRecord;
 
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
@@ -108,6 +98,7 @@ public class SendPicture extends Activity {
 
     @Override
     protected void onResume() {
+        mArrayAdapter.clear();
         mBluetoothAdapter.startDiscovery();
         super.onResume();
     }
