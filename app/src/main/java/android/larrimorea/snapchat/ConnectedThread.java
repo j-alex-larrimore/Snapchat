@@ -3,6 +3,7 @@ package android.larrimorea.snapchat;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,19 +18,13 @@ public class ConnectedThread extends Thread{
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private static int MESSAGE_READ = 2;
-    private static Handler mHandler;
 
     public ConnectedThread(BluetoothSocket socket){
         mmSocket = socket;
         InputStream tempIn = null;
         OutputStream tempOut = null;
+        Log.i("ConnectedThread Init", "Start");
 
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-
-            }
-        };
 
         try{
             tempIn = socket.getInputStream();
@@ -48,7 +43,7 @@ public class ConnectedThread extends Thread{
         while(true){
             try{
                 bytes = mmInStream.read(buffer);
-                mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                SendPicture.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }catch(IOException e){
                 break;
             }
@@ -58,6 +53,7 @@ public class ConnectedThread extends Thread{
     //Call from main activity to send data to remote device
     public void write(byte[] bytes){
         try{
+            Log.i("ConnectedThread - Write", "Writing");
             mmOutStream.write(bytes);
         }catch(IOException e){
 

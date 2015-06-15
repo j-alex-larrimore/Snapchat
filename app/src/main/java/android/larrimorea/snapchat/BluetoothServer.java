@@ -61,6 +61,7 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
 
                 if(socket != null){
                     ConnectedThread ct = new ConnectedThread(socket);
+                    ct.run();
                     try {
                         mmServerSocket.close();
                     }

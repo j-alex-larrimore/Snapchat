@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -22,14 +24,17 @@ import java.util.Set;
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
     private List<String> arrayStrings  = new ArrayList<String>();
+    private List<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();
     private ArrayAdapter<String> mArrayAdapter;
     private IntentFilter filter;
     private static BluetoothAdapter mBluetoothAdapter;
 
+    public static Handler mHandler;
 
     protected ListView listView;
     private static Uri selectedPic = null;
     private static String targetDevice = null;
+    public static BluetoothDevice clickedDevice = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +44,13 @@ public class SendPicture extends Activity {
 
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
 
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                Log.i("MHandler", "Init");
+            }
+        };
+
         listView.setAdapter(mArrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -47,7 +59,9 @@ public class SendPicture extends Activity {
                 Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
                 String str = (String)mArrayAdapter.getItem(position);
                 targetDevice = str;
+                clickedDevice = deviceList.get(position);
                 Toast.makeText(getApplicationContext(), "Clicked -" + str, Toast.LENGTH_LONG).show();
+
                 startActivity(intent);
             }
         });
@@ -71,7 +85,9 @@ public class SendPicture extends Activity {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if(pairedDevices.size()>0){
             for(BluetoothDevice device : pairedDevices){
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                //mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                //deviceList.add(device);
+                Toast.makeText(this, "Paired Device!", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -86,6 +102,8 @@ public class SendPicture extends Activity {
         if(requestCode == REQUEST_ENABLE_BT){
             if(resultCode == RESULT_OK){
                 Toast.makeText(this, "Bluetooth Connection!", Toast.LENGTH_LONG).show();
+
+
             }else if(resultCode == RESULT_CANCELED){
                 Toast.makeText(this, "Bluetooth Canceled!", Toast.LENGTH_LONG).show();
             }else{
@@ -105,7 +123,6 @@ public class SendPicture extends Activity {
 
     @Override
     protected void onPause() {
-        //NEED TO CALL THIS FUNCTION WHEN WE FIND ALL DEVICES
         mBluetoothAdapter.cancelDiscovery();
         Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
         super.onPause();
@@ -125,6 +142,7 @@ public class SendPicture extends Activity {
             if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                deviceList.add(device);
                 //Toast.makeText(context, "Device found!" + device.getName(), Toast.LENGTH_LONG).show();
             }
         }
@@ -144,5 +162,9 @@ public class SendPicture extends Activity {
 
     public static String getTargetDevice(){
         return targetDevice;
+    }
+
+    public static BluetoothAdapter getBTAdapter(){
+        return mBluetoothAdapter;
     }
 }
