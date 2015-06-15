@@ -29,18 +29,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.LogRecord;
 
-/**
- * Created by Alex on 6/9/2015.
- */
 public class SendPicture extends Activity {
     private int REQUEST_ENABLE_BT = 1;
-    private static int MESSAGE_READ = 2;
     private List<String> arrayStrings  = new ArrayList<String>();
     private ArrayAdapter<String> mArrayAdapter;
     private IntentFilter filter;
     private static BluetoothAdapter mBluetoothAdapter;
-    private static Handler mHandler;
-    public static UUID myUUID;
+
+
     protected ListView listView;
     private static Uri selectedPic = null;
     private static String targetDevice = null;
@@ -50,15 +46,7 @@ public class SendPicture extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_image);
         listView = (ListView)findViewById(R.id.listViewSend);
-        AcceptThread thread = new AcceptThread();
-        thread.run();
-        
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
 
-            }
-        };
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
 
         listView.setAdapter(mArrayAdapter);
@@ -98,6 +86,9 @@ public class SendPicture extends Activity {
         }
 
         registerReceiver(mReceiver, filter);
+        new BluetoothServer().execute(mBluetoothAdapter);
+       // AcceptThread thread = new AcceptThread();
+        //thread.run();
     }
 
     @Override
@@ -135,143 +126,7 @@ public class SendPicture extends Activity {
         super.onDestroy();
     }
 
-    public class AcceptThread extends Thread{
-        private final BluetoothServerSocket mmServerSocket;
 
-        public AcceptThread(){
-            BluetoothServerSocket temp = null;
-
-            //Got this uuid from using a random UUID generator online. Students should generate their own.
-            myUUID = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
-            try{
-                temp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("name", myUUID);
-                Toast.makeText(getApplicationContext(), "AcceptThread", Toast.LENGTH_LONG).show();
-            }catch (IOException e){
-
-            }
-            mmServerSocket = temp;
-        }
-
-        public void run(){
-            BluetoothSocket socket = null;
-            while(true){
-                try{
-                    socket = mmServerSocket.accept();
-                    if(socket != null){
-                        ConnectedThread ct = new ConnectedThread(socket);
-                        mmServerSocket.close();
-                        break;
-                    }
-                }catch(IOException e){
-                    break;
-                }
-            }
-        }
-
-
-
-        public void cancel(){
-            try{
-                mmServerSocket.close();
-            }catch(IOException e){
-
-            }
-        }
-    }
-
-    private class ConnectThread extends Thread{
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
-
-        public ConnectThread(BluetoothDevice device){
-            BluetoothSocket temp = null;
-            mmDevice = device;
-
-            try{
-                temp = device.createRfcommSocketToServiceRecord(myUUID);
-            }catch(IOException e){
-
-            }
-            mmSocket = temp;
-        }
-
-        public void run(){
-            mBluetoothAdapter.cancelDiscovery();
-
-            try{
-                mmSocket.connect();
-            }catch(IOException connectException){
-                try{
-                    mmSocket.close();
-                }catch(IOException closeException){
-
-                }
-                return;
-            }
-            ConnectedThread ct = new ConnectedThread(mmSocket);
-        }
-
-        public void cancel(){
-            try{
-                mmSocket.close();
-            }catch(IOException closeException){
-
-            }
-        }
-    }
-
-    private class ConnectedThread extends Thread{
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-
-        public ConnectedThread(BluetoothSocket socket){
-            mmSocket = socket;
-            InputStream tempIn = null;
-            OutputStream tempOut = null;
-
-            try{
-                tempIn = socket.getInputStream();
-                tempOut = socket.getOutputStream();
-            }catch(IOException e){
-
-            }
-            mmInStream = tempIn;
-            mmOutStream = tempOut;
-        }
-
-        public void run(){
-            byte[] buffer = new byte[1024];
-            int bytes;
-
-            while(true){
-                try{
-                    bytes = mmInStream.read(buffer);
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-                }catch(IOException e){
-                    break;
-                }
-            }
-        }
-
-        //Call from main activity to send data to remote device
-        public void write(byte[] bytes){
-            try{
-                mmOutStream.write(bytes);
-            }catch(IOException e){
-
-            }
-        }
-
-            //Call from the main activity to shutdown the connection
-        public void cancel(){
-            try{
-                mmSocket.close();
-            }catch(IOException e){
-
-            }
-        }
-    }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver(){
         public void onReceive(Context context, Intent intent){
