@@ -66,7 +66,7 @@ public class ChoosePic extends Activity{
                     SendPicture.setPicture(uri);
                     //Connecting!
                     ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
-                    ct.run();
+                    ct.run(uri);
                 }
                 Toast.makeText(this, "Picture Search Success!" + SendPicture.getTargetDevice() + " " + uri.toString(), Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){

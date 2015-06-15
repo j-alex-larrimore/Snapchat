@@ -40,7 +40,8 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
             //Got this uuid from using a random UUID generator online. Students should generate their own.
             myUUID = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
             try{
-                temp = btAdapter.listenUsingRfcommWithServiceRecord("name", myUUID);
+                //had errors using secure rfcomm
+                temp = btAdapter.listenUsingInsecureRfcommWithServiceRecord("name", myUUID);
                 //temp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("name", myUUID);
                //Toast.makeText(, "AcceptThread", Toast.LENGTH_LONG).show();
                 Log.i("AcceptThread", "AcceptingThreads");

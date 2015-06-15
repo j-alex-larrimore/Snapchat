@@ -25,7 +25,8 @@ public class ConnectThread extends Thread{
         btAdapter = SendPicture.getBTAdapter();
         myUUID = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
         try{
-            temp = device.createRfcommSocketToServiceRecord(myUUID);
+            //secure did not work, trying insecure
+            temp = device.createInsecureRfcommSocketToServiceRecord(myUUID);
         }catch(IOException e){
 
         }
@@ -47,7 +48,9 @@ public class ConnectThread extends Thread{
         }
         Log.i("ConnectThread", "Calling Connected Thread");
         ConnectedThread cdt = new ConnectedThread(mmSocket);
-        cdt.write(uri);
+        String str = uri.toString();
+        byte[] bytes = str.getBytes();
+        cdt.write(bytes);
     }
 
     public void cancel(){
