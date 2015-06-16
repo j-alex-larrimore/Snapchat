@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 /**
@@ -44,9 +45,17 @@ public class ConnectThread extends Thread{
         btAdapter.cancelDiscovery();
 
         try{
-            mmSocket.connect();
+            while(!mmSocket.isConnected()) {
+                mmSocket.connect();
+            }
         }catch(IOException connectException){
             try{
+//                Class<?> clazz = mmSocket.getRemoteDevice().getClass();
+//                Class<?>[] paramTypes = new Class<?>[] {Integer.TYPE};
+//                Method m = clazz.getMethod("getPort", paramTypes);
+//                Object[] params = new Object[] {Integer.valueOf(1)};
+                //mmSocket = (BluetoothSocket) mmDevice.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[]{int.class}).invoke(mmDevice, 1);
+                //mmSocket.connect();
                 mmSocket.close();
             }catch(IOException closeException){
 
@@ -84,7 +93,9 @@ public class ConnectThread extends Thread{
         byte[] buffer = new byte[(int)file.length()];
         InputStream ios = null;
         try{
-            ios = new FileInputStream(file);
+            if(file.exists()) {
+                ios = new FileInputStream(file);
+            }
             if(ios.read(buffer) == -1){
                 throw new IOException("EOF reached");
             }
@@ -93,7 +104,7 @@ public class ConnectThread extends Thread{
                 if (ios != null){ ios.close();
                 }
             }catch(IOException e){
-
+                Log.e("FiletoBuffer", "Error");
             }
         }
 
