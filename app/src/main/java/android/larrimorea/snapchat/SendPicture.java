@@ -7,6 +7,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
@@ -33,12 +36,6 @@ public class SendPicture extends Activity {
     private IntentFilter filter;
     private static BluetoothAdapter mBluetoothAdapter;
     public static Handler mHandler;
-    //global variables for Beam transfer
-//    private Uri[] mFileUris = new Uri[10];
-//    private FileUriCallback mFileUriCallback;
-//    private NfcAdapter mNfcAdapter;
-//    private Uri fileUri;
-
 
     protected ListView listView;
     private static String selectedPic = null;
@@ -49,17 +46,18 @@ public class SendPicture extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-//        mFileUriCallback = new FileUriCallback();
-//
-//        mNfcAdapter.setBeamPushUrisCallback(mFileUriCallback, this);
-
         setContentView(R.layout.send_image);
         listView = (ListView)findViewById(R.id.listViewSend);
 
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
 
-
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                byte[] readBuf = (byte[]) msg.obj;
+                Bitmap bmp = BitmapFactory.decodeByteArray(readBuf, 0, msg.arg1);
+            }
+        };
         listView.setAdapter(mArrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -155,18 +153,21 @@ public class SendPicture extends Activity {
         }
     };
 
-    public void setPicture(Uri pic){
+    public static void setPicture(Uri pic){
 
         selectedPic = pic.toString();
+
+
+
+
 //        File extDir = getExternalFilesDir(null);
 //        File requestFile = new File(extDir, selectedPic);
-//        requestFile.setReadable(true, false);
-//        fileUri = Uri.fromFile(requestFile);
-//        if(fileUri!= null){
-//            mFileUris[0] = fileUri;
-//        }else{
-//            Log.e("SetPicture", "File Error");
-//        }
+//        Intent intent = new Intent();
+//        intent.setAction(Intent.ACTION_SEND);
+//        intent.setType("image/jpeg");
+//        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(requestFile));
+//        startActivity(intent);
+
 
     }
 
@@ -186,15 +187,5 @@ public class SendPicture extends Activity {
         return mBluetoothAdapter;
     }
 
-//    private class FileUriCallback implements
-//            NfcAdapter.CreateBeamUrisCallback{
-//        public FileUriCallback(){
-//
-//        }
-//
-//        @Override
-//        public Uri[] createBeamUris(NfcEvent event) {
-//            return mFileUris;
-//        }
-//    }
+
 }

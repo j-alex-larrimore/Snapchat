@@ -3,9 +3,14 @@ package android.larrimorea.snapchat;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -48,9 +53,13 @@ public class ConnectThread extends Thread{
         }
         Log.i("ConnectThread", "Calling Connected Thread");
         ConnectedThread cdt = new ConnectedThread(mmSocket);
-        String str = uri.toString();
-        byte[] bytes = str.getBytes();
-        cdt.write(bytes);
+        //String str = uri.toString();
+        //byte[] bytes = str.getBytes();
+        Bitmap icon = BitmapFactory.decodeFile(uri.toString());
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        icon.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
+        byte[] image = bytes.toByteArray();
+        cdt.write(image);
     }
 
     public void cancel(){

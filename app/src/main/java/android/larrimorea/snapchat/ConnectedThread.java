@@ -38,13 +38,15 @@ public class ConnectedThread extends Thread{
 
     public void run(){
         byte[] buffer = new byte[1024];
-        int bytes;
+        byte[] imageBuffer = new byte[1024*1024];
+        int pos = 0;
 
         while(true){
             try{
-                bytes = mmInStream.read(buffer);
-                Log.i("Obtaining message", String.valueOf(bytes));
-                SendPicture.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                int bytes = mmInStream.read(buffer);
+                System.arraycopy(buffer, 0, imageBuffer, pos, bytes);
+                pos += bytes;
+                SendPicture.mHandler.obtainMessage(MESSAGE_READ, pos, -1, imageBuffer).sendToTarget();
             }catch(IOException e){
                 break;
             }
@@ -54,7 +56,7 @@ public class ConnectedThread extends Thread{
     //Call from main activity to send data to remote device
     public void write(byte[] bytes){
         try{
-            Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
+            //Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
             mmOutStream.write(bytes);
         }catch(IOException e){
 
