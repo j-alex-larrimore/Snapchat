@@ -19,6 +19,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,32 +32,33 @@ public class SendPicture extends Activity {
     private ArrayAdapter<String> mArrayAdapter;
     private IntentFilter filter;
     private static BluetoothAdapter mBluetoothAdapter;
-    //global variables for Beam transfer
-    private Uri[] mFileUris = new Uri[10];
-
     public static Handler mHandler;
+    //global variables for Beam transfer
+//    private Uri[] mFileUris = new Uri[10];
+//    private FileUriCallback mFileUriCallback;
+//    private NfcAdapter mNfcAdapter;
+//    private Uri fileUri;
+
 
     protected ListView listView;
-    private static Uri selectedPic = null;
+    private static String selectedPic = null;
     private static String targetDevice = null;
     public static BluetoothDevice clickedDevice = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+//        mFileUriCallback = new FileUriCallback();
+//
+//        mNfcAdapter.setBeamPushUrisCallback(mFileUriCallback, this);
+
         setContentView(R.layout.send_image);
         listView = (ListView)findViewById(R.id.listViewSend);
 
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
 
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                Bundle bundle = msg.getData();
-                //byte[] buffer = bundle.getByteArray(buffer);
-                //Log.i("MHandler", "Init" + buffer);
-            }
-        };
 
         listView.setAdapter(mArrayAdapter);
 
@@ -99,8 +102,6 @@ public class SendPicture extends Activity {
 
         registerReceiver(mReceiver, filter);
         new BluetoothServer().execute(mBluetoothAdapter);
-       // AcceptThread thread = new AcceptThread();
-        //thread.run();
     }
 
     @Override
@@ -154,11 +155,22 @@ public class SendPicture extends Activity {
         }
     };
 
-    public static void setPicture(Uri pic){
-        selectedPic = pic;
+    public void setPicture(Uri pic){
+
+        selectedPic = pic.toString();
+//        File extDir = getExternalFilesDir(null);
+//        File requestFile = new File(extDir, selectedPic);
+//        requestFile.setReadable(true, false);
+//        fileUri = Uri.fromFile(requestFile);
+//        if(fileUri!= null){
+//            mFileUris[0] = fileUri;
+//        }else{
+//            Log.e("SetPicture", "File Error");
+//        }
+
     }
 
-    public static Uri getPicture(){
+    public static String getPicture(){
         return selectedPic;
     }
 
@@ -174,15 +186,15 @@ public class SendPicture extends Activity {
         return mBluetoothAdapter;
     }
 
-    private class FileUriCallback implements
-            NfcAdapter.CreateBeamUrisCallback{
-        public FileUriCallback(){
-
-        }
-
-        @Override
-        public Uri[] createBeamUris(NfcEvent event) {
-            return mFileUris;
-        }
-    }
+//    private class FileUriCallback implements
+//            NfcAdapter.CreateBeamUrisCallback{
+//        public FileUriCallback(){
+//
+//        }
+//
+//        @Override
+//        public Uri[] createBeamUris(NfcEvent event) {
+//            return mFileUris;
+//        }
+//    }
 }
