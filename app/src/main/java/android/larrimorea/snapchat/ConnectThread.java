@@ -44,18 +44,12 @@ public class ConnectThread extends Thread{
     public void run(Uri uri){
         btAdapter.cancelDiscovery();
 
+
         try{
-            while(!mmSocket.isConnected()) {
-                mmSocket.connect();
-            }
+            mmSocket.connect();
+
         }catch(IOException connectException){
             try{
-//                Class<?> clazz = mmSocket.getRemoteDevice().getClass();
-//                Class<?>[] paramTypes = new Class<?>[] {Integer.TYPE};
-//                Method m = clazz.getMethod("getPort", paramTypes);
-//                Object[] params = new Object[] {Integer.valueOf(1)};
-                //mmSocket = (BluetoothSocket) mmDevice.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[]{int.class}).invoke(mmDevice, 1);
-                //mmSocket.connect();
                 mmSocket.close();
             }catch(IOException closeException){
 
@@ -64,17 +58,9 @@ public class ConnectThread extends Thread{
         }
         Log.i("ConnectThread", "Calling Connected Thread");
         ConnectedThread cdt = new ConnectedThread(mmSocket);
-        //String str = uri.toString();
-        //byte[] bytes = str.getBytes();
-//        Bitmap icon = BitmapFactory.decodeFile(uri.toString());
-//        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-//        icon.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
-//        byte[] image = bytes.toByteArray();
-//        cdt.write(image);
-        File f = new File(uri.getPath());
         byte[] buffer = null;
         try {
-            buffer = read(f);
+            buffer = read(uri);
         }catch(IOException e){
 
         }
@@ -89,7 +75,9 @@ public class ConnectThread extends Thread{
         }
     }
 
-    public byte[] read(File file) throws IOException{
+    public byte[] read(Uri uri) throws IOException{
+        File file = new File(uri.toString());
+        file.getAbsolutePath();
         byte[] buffer = new byte[(int)file.length()];
         InputStream ios = null;
         try{
