@@ -55,7 +55,6 @@ public class SendPicture extends Activity {
             @Override
             public void handleMessage(Message msg) {
                 byte[] readBuf = (byte[]) msg.obj;
-                Bitmap bmp = BitmapFactory.decodeByteArray(readBuf, 0, msg.arg1);
             }
         };
         listView.setAdapter(mArrayAdapter);

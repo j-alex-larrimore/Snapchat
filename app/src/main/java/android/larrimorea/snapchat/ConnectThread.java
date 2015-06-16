@@ -11,7 +11,9 @@ import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 /**
@@ -55,11 +57,19 @@ public class ConnectThread extends Thread{
         ConnectedThread cdt = new ConnectedThread(mmSocket);
         //String str = uri.toString();
         //byte[] bytes = str.getBytes();
-        Bitmap icon = BitmapFactory.decodeFile(uri.toString());
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        icon.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
-        byte[] image = bytes.toByteArray();
-        cdt.write(image);
+//        Bitmap icon = BitmapFactory.decodeFile(uri.toString());
+//        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+//        icon.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
+//        byte[] image = bytes.toByteArray();
+//        cdt.write(image);
+        File f = new File(uri.getPath());
+        byte[] buffer = null;
+        try {
+            buffer = read(f);
+        }catch(IOException e){
+
+        }
+        cdt.write(buffer);
     }
 
     public void cancel(){
@@ -68,5 +78,25 @@ public class ConnectThread extends Thread{
         }catch(IOException closeException){
 
         }
+    }
+
+    public byte[] read(File file) throws IOException{
+        byte[] buffer = new byte[(int)file.length()];
+        InputStream ios = null;
+        try{
+            ios = new FileInputStream(file);
+            if(ios.read(buffer) == -1){
+                throw new IOException("EOF reached");
+            }
+        }finally {
+            try{
+                if (ios != null){ ios.close();
+                }
+            }catch(IOException e){
+
+            }
+        }
+
+        return buffer;
     }
 }
