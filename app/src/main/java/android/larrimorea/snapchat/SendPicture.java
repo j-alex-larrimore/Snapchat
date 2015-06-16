@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -28,6 +30,8 @@ public class SendPicture extends Activity {
     private ArrayAdapter<String> mArrayAdapter;
     private IntentFilter filter;
     private static BluetoothAdapter mBluetoothAdapter;
+    //global variables for Beam transfer
+    private Uri[] mFileUris = new Uri[10];
 
     public static Handler mHandler;
 
@@ -47,7 +51,9 @@ public class SendPicture extends Activity {
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                Log.i("MHandler", "Init");
+                Bundle bundle = msg.getData();
+                //byte[] buffer = bundle.getByteArray(buffer);
+                //Log.i("MHandler", "Init" + buffer);
             }
         };
 
@@ -57,7 +63,7 @@ public class SendPicture extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
-                String str = (String)mArrayAdapter.getItem(position);
+                String str = (String) mArrayAdapter.getItem(position);
                 targetDevice = str;
                 clickedDevice = deviceList.get(position);
                 Toast.makeText(getApplicationContext(), "Clicked -" + str, Toast.LENGTH_LONG).show();
@@ -166,5 +172,17 @@ public class SendPicture extends Activity {
 
     public static BluetoothAdapter getBTAdapter(){
         return mBluetoothAdapter;
+    }
+
+    private class FileUriCallback implements
+            NfcAdapter.CreateBeamUrisCallback{
+        public FileUriCallback(){
+
+        }
+
+        @Override
+        public Uri[] createBeamUris(NfcEvent event) {
+            return mFileUris;
+        }
     }
 }

@@ -43,6 +43,7 @@ public class ConnectedThread extends Thread{
         while(true){
             try{
                 bytes = mmInStream.read(buffer);
+                Log.i("Obtaining message", String.valueOf(bytes));
                 SendPicture.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }catch(IOException e){
                 break;
@@ -53,7 +54,7 @@ public class ConnectedThread extends Thread{
     //Call from main activity to send data to remote device
     public void write(byte[] bytes){
         try{
-            Log.i("ConnectedThread - Write", "Writing");
+            Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
             mmOutStream.write(bytes);
         }catch(IOException e){
 
