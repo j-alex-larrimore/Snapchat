@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
@@ -49,10 +50,11 @@ public class ConnectThread extends Thread{
             mmSocket.connect();
 
         }catch(IOException connectException){
+            Log.i("run", "connection failure");
             try{
                 mmSocket.close();
             }catch(IOException closeException){
-
+                Log.e("Socketssss", "IOException " + closeException);
             }
             return;
         }
@@ -71,25 +73,31 @@ public class ConnectThread extends Thread{
         try{
             mmSocket.close();
         }catch(IOException closeException){
-
+            Log.e("closeException", "error: " + closeException);
         }
     }
 
     public byte[] read(Uri uri) throws IOException{
-        File file = new File(uri.toString());
-        file.getAbsolutePath();
+        Log.i("read", "project working");
+        final File file = new File(uri.getPath());
+        String ap = file.getAbsolutePath();
         byte[] buffer = new byte[(int)file.length()];
         InputStream ios = null;
         try{
-            if(file.exists()) {
+            if(file.isFile()) {
                 ios = new FileInputStream(file);
+            }else{
+                Log.i("File dir error", "Path " + ap);
             }
-            if(ios.read(buffer) == -1){
-                throw new IOException("EOF reached");
-            }
+
+            //Code below causes null pointer exception
+//            if(ios.read(buffer) == -1){
+//                throw new IOException("EOF reached");
+//            }
         }finally {
             try{
-                if (ios != null){ ios.close();
+                if (ios != null){
+                    ios.close();
                 }
             }catch(IOException e){
                 Log.e("FiletoBuffer", "Error");
@@ -98,4 +106,5 @@ public class ConnectThread extends Thread{
 
         return buffer;
     }
+
 }

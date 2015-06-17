@@ -8,22 +8,31 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Alex on 6/15/2015.
  */
 
 public class ConnectedThread extends Thread{
-    private final BluetoothSocket mmSocket;
+    private static BluetoothSocket mmSocket;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private static int MESSAGE_READ = 2;
+    private int timerCount = 0;
 
     public ConnectedThread(BluetoothSocket socket){
         mmSocket = socket;
         InputStream tempIn = null;
         OutputStream tempOut = null;
         Log.i("ConnectedThread Init", "Start");
+
+        //Timer to check our connection to see if it needs to be reconnected
+        MyTimerTask yourTask = new MyTimerTask();
+        Timer t = new Timer();
+        //t.scheduleAtFixedRate(yourTask, 0, 5000);
+        t.scheduleAtFixedRate(yourTask, 0, 30000);
 
 
         try{
@@ -64,11 +73,28 @@ public class ConnectedThread extends Thread{
     }
 
     //Call from the main activity to shutdown the connection
-    public void cancel(){
+    public static void cancel(){
         try{
             mmSocket.close();
         }catch(IOException e){
 
+        }
+    }
+
+    public class MyTimerTask extends TimerTask {
+        public void run(){
+//            if(!mmSocket.isConnected()){
+//                //ConnectedThread.cancel();
+//                Log.i("ConnectedThread", "Needs a Break");
+//            }else{
+//                Log.i("ConnectedThread", "Still going");
+//            }
+            if(timerCount == 0){
+                timerCount++;
+            }else {
+                Log.i("MyTimer", "Canceling Connection");
+                ConnectedThread.cancel();
+            }
         }
     }
 }

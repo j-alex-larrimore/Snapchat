@@ -27,15 +27,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SendPicture extends Activity {
-    private int REQUEST_ENABLE_BT = 1;
     private List<String> arrayStrings  = new ArrayList<String>();
     private List<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();
     private ArrayAdapter<String> mArrayAdapter;
-    private IntentFilter filter;
-    private static BluetoothAdapter mBluetoothAdapter;
-    public static Handler mHandler;
+
+    private int REQUEST_ENABLE_BT = 1;
 
     protected ListView listView;
     private static String selectedPic = null;
@@ -51,12 +51,7 @@ public class SendPicture extends Activity {
 
         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
 
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                byte[] readBuf = (byte[]) msg.obj;
-            }
-        };
+
         listView.setAdapter(mArrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -72,33 +67,7 @@ public class SendPicture extends Activity {
             }
         });
 
-        filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        if(mBluetoothAdapter == null){
-            Log.i("SendPicture", "Bluetooth Not Enabled");
-        }
-
-        //Code to enable the Bluetooth Adapter
-        if(!mBluetoothAdapter.isEnabled()){
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }else{
-            Toast.makeText(this, "Bluetooth enabled!", Toast.LENGTH_LONG).show();
-        }
-
-        //Searching all paired devices
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-        if(pairedDevices.size()>0){
-            for(BluetoothDevice device : pairedDevices){
-                //mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                //deviceList.add(device);
-                Toast.makeText(this, "Paired Device!", Toast.LENGTH_LONG).show();
-            }
-        }
-
-        registerReceiver(mReceiver, filter);
-        new BluetoothServer().execute(mBluetoothAdapter);
     }
 
     @Override
@@ -118,39 +87,7 @@ public class SendPicture extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    protected void onResume() {
-        mArrayAdapter.clear();
-        mBluetoothAdapter.startDiscovery();
-        super.onResume();
-    }
 
-    @Override
-    protected void onPause() {
-        mBluetoothAdapter.cancelDiscovery();
-        Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        unregisterReceiver(mReceiver);
-        super.onDestroy();
-    }
-
-
-
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver(){
-        public void onReceive(Context context, Intent intent){
-            String action = intent.getAction();
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                deviceList.add(device);
-                //Toast.makeText(context, "Device found!" + device.getName(), Toast.LENGTH_LONG).show();
-            }
-        }
-    };
 
     public static void setPicture(Uri pic){
 
