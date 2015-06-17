@@ -32,8 +32,7 @@ import java.util.TimerTask;
 
 public class SendPicture extends Activity {
     private List<String> arrayStrings  = new ArrayList<String>();
-    private List<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();
-    private ArrayAdapter<String> mArrayAdapter;
+    public static ArrayAdapter<String> mArrayAdapter;
 
     private int REQUEST_ENABLE_BT = 1;
 
@@ -60,7 +59,7 @@ public class SendPicture extends Activity {
                 Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
                 String str = (String) mArrayAdapter.getItem(position);
                 targetDevice = str;
-                clickedDevice = deviceList.get(position);
+                clickedDevice = MainActivity.deviceList.get(position);
                 Toast.makeText(getApplicationContext(), "Clicked -" + str, Toast.LENGTH_LONG).show();
 
                 startActivity(intent);
@@ -119,8 +118,11 @@ public class SendPicture extends Activity {
         return targetDevice;
     }
 
-    public static BluetoothAdapter getBTAdapter(){
-        return mBluetoothAdapter;
+    @Override
+    protected void onResume() {
+        mArrayAdapter.clear();
+        MainActivity.mBluetoothAdapter.startDiscovery();
+        super.onResume();
     }
 
 

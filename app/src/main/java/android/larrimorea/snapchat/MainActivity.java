@@ -19,15 +19,19 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.TimerTask;
 
 
 public class MainActivity extends Activity {
     protected ProgressBar progressBar;
     protected ListView listView;
 
+    public static List<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();
     private IntentFilter filter;
-    private static BluetoothAdapter mBluetoothAdapter;
+    public static BluetoothAdapter mBluetoothAdapter;
     public static Handler mHandler;
     private int REQUEST_ENABLE_BT = 1;
 
@@ -45,12 +49,7 @@ public class MainActivity extends Activity {
         progressBar = (ProgressBar)findViewById(R.id.progressBar);
         listView = (ListView)findViewById(R.id.listView);
 
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                byte[] readBuf = (byte[]) msg.obj;
-            }
-        };
+
 
         listView.setEmptyView(progressBar);
 
@@ -73,41 +72,46 @@ public class MainActivity extends Activity {
                     //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
                 }
 
-                //Uri blogUri = Uri.parse(BlogPostParser.get().posts.get(position).url);
-                //intent.setData(blogUri);
-
-                filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-                if(mBluetoothAdapter == null){
-                    Log.i("SendPicture", "Bluetooth Not Enabled");
-                }
-
-                //Code to enable the Bluetooth Adapter
-                if(!mBluetoothAdapter.isEnabled()){
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                }else{
-                    Toast.makeText(this, "Bluetooth enabled!", Toast.LENGTH_LONG).show();
-                }
-
-                //Searching all paired devices
-                Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-                if(pairedDevices.size()>0){
-                    for(BluetoothDevice device : pairedDevices){
-                        //mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                        //deviceList.add(device);
-                        Toast.makeText(this, "Paired Device!", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                registerReceiver(mReceiver, filter);
-                new BluetoothServer().execute(mBluetoothAdapter);
-
-
             }
         });
 
+        //Uri blogUri = Uri.parse(BlogPostParser.get().posts.get(position).url);
+        //intent.setData(blogUri);
+
+        filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if(mBluetoothAdapter == null){
+            Log.i("SendPicture", "Bluetooth Not Enabled");
+        }
+
+        //Code to enable the Bluetooth Adapter
+        if(!mBluetoothAdapter.isEnabled()){
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }else{
+            Toast.makeText(getApplicationContext(), "Bluetooth enabled!", Toast.LENGTH_LONG).show();
+        }
+
+        //Searching all paired devices
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+        if(pairedDevices.size()>0){
+            for(BluetoothDevice device : pairedDevices){
+                //mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                //deviceList.add(device);
+                Toast.makeText(getApplicationContext(), "Paired Device!", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                byte[] readBuf = (byte[]) msg.obj;
+            }
+        };
+
+        registerReceiver(mReceiver, filter);
+        new BluetoothServer().execute(mBluetoothAdapter);
 
 
 
@@ -118,13 +122,6 @@ public class MainActivity extends Activity {
 
 
        // SendPicture.AcceptThread.start();
-    }
-
-    @Override
-    protected void onResume() {
-        mArrayAdapter.clear();
-        mBluetoothAdapter.startDiscovery();
-        super.onResume();
     }
 
     @Override
@@ -145,10 +142,17 @@ public class MainActivity extends Activity {
             String action = intent.getAction();
             if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                SendPicture.mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
                 deviceList.add(device);
                 //Toast.makeText(context, "Device found!" + device.getName(), Toast.LENGTH_LONG).show();
             }
         }
     };
+
+    public static BluetoothAdapter getBTAdapter(){
+        return mBluetoothAdapter;
+    }
+
+
+
 }

@@ -12,6 +12,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 /**
@@ -21,6 +23,9 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
     private Activity activity;
     public UUID myUUID;
     public BluetoothAdapter btAdapter;
+
+    private int timerCount = 0;
+    private ConnectedThread cdt;
 
     @Override
     protected Void doInBackground(BluetoothAdapter... bluetoothAdapters){
@@ -49,6 +54,12 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
                 Log.e("SendPicture Constructor", "IOException: " + e);
             }
             mmServerSocket = temp;
+
+//            //Timer to check our connection to see if it needs to be reconnected
+//            MyTimerTask yourTask = new MyTimerTask();
+//            Timer t = new Timer();
+//            //t.scheduleAtFixedRate(yourTask, 0, 5000);
+//            t.scheduleAtFixedRate(yourTask, 0, 30000);
         }
 
         public void run(){
@@ -61,15 +72,19 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
                 }
 
                 if(socket != null){
-                    ConnectedThread ct = new ConnectedThread(socket);
-                    ct.run();
+                    cdt = new ConnectedThread(socket);
+                    cdt.run();
                     try {
+                        Log.i("AcceptThreadRun", "Closing Socket");
                         mmServerSocket.close();
+                        new BluetoothServer().execute(MainActivity.mBluetoothAdapter);
                     }
                     catch(IOException e) {
                         Log.e("SendPicture Socket", "IOException: " + e);
                     }
                     break;
+                }else{
+                    Log.i("AcceptThreadRun", "Null Socket");
                 }
             }
         }
@@ -84,5 +99,22 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
             }
         }
     }
+
+//    public class MyTimerTask extends TimerTask {
+//        public void run(){
+////            if(!mmSocket.isConnected()){
+////                //ConnectedThread.cancel();
+////                Log.i("ConnectedThread", "Needs a Break");
+////            }else{
+////                Log.i("ConnectedThread", "Still going");
+////            }
+//            if(timerCount == 0){
+//                timerCount++;
+//            }else {
+//                Log.i("MyTimerAccept", "Canceling Connection");
+//                cdt = null;
+//            }
+//        }
+//    }
 
 }

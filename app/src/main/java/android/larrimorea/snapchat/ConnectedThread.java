@@ -20,7 +20,6 @@ public class ConnectedThread extends Thread{
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private static int MESSAGE_READ = 2;
-    private int timerCount = 0;
 
     public ConnectedThread(BluetoothSocket socket){
         mmSocket = socket;
@@ -28,11 +27,7 @@ public class ConnectedThread extends Thread{
         OutputStream tempOut = null;
         Log.i("ConnectedThread Init", "Start");
 
-        //Timer to check our connection to see if it needs to be reconnected
-        MyTimerTask yourTask = new MyTimerTask();
-        Timer t = new Timer();
-        //t.scheduleAtFixedRate(yourTask, 0, 5000);
-        t.scheduleAtFixedRate(yourTask, 0, 30000);
+
 
 
         try{
@@ -55,7 +50,7 @@ public class ConnectedThread extends Thread{
                 int bytes = mmInStream.read(buffer);
                 System.arraycopy(buffer, 0, imageBuffer, pos, bytes);
                 pos += bytes;
-                SendPicture.mHandler.obtainMessage(MESSAGE_READ, pos, -1, imageBuffer).sendToTarget();
+                MainActivity.mHandler.obtainMessage(MESSAGE_READ, pos, -1, imageBuffer).sendToTarget();
             }catch(IOException e){
                 break;
             }
@@ -81,20 +76,4 @@ public class ConnectedThread extends Thread{
         }
     }
 
-    public class MyTimerTask extends TimerTask {
-        public void run(){
-//            if(!mmSocket.isConnected()){
-//                //ConnectedThread.cancel();
-//                Log.i("ConnectedThread", "Needs a Break");
-//            }else{
-//                Log.i("ConnectedThread", "Still going");
-//            }
-            if(timerCount == 0){
-                timerCount++;
-            }else {
-                Log.i("MyTimer", "Canceling Connection");
-                ConnectedThread.cancel();
-            }
-        }
-    }
 }
