@@ -2,6 +2,7 @@ package android.larrimorea.snapchat;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
 import android.net.Uri;
@@ -66,7 +67,13 @@ public class ChoosePic extends Activity{
                     SendPicture.setPicture(uri);
                     //Connecting!
                     ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
-                    ct.run(uri, this);
+                    //ct.run(uri, this);
+
+                        Intent i = new Intent(Intent.ACTION_SEND);
+                        i.setType("image/jpeg");
+                        i.putExtra(Intent.EXTRA_STREAM, uri);
+                        startActivity(Intent.createChooser(i, "Send Image"));
+
                 }
                 Toast.makeText(this, "Picture Search Success!" + SendPicture.getTargetDevice() + " " + uri.toString(), Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){

@@ -3,6 +3,7 @@ package android.larrimorea.snapchat;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.content.Context;
@@ -40,48 +41,49 @@ public class ConnectThread extends Thread{
 
     }
 
-    public void run(Uri uri, Context context){
-        btAdapter.cancelDiscovery();
 
-
-        try{
-            if(!mmSocket.isConnected()) {
-                Log.i("ConnectThread", "Connect Attempt");
-                mmSocket.connect();
-            }
-            else{
-                Log.i("ConnectThread", "Already Connected");
-            }
-
-        }catch(IOException connectException){
-            Log.i("run", "connection failure" + connectException);
-            try{
-                mmSocket =(BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocketFromRecord", new Class[] {int.class}).invoke(mmDevice,1);
-                mmSocket.connect();
-                mmSocket.close();
-            }catch(IOException closeException){
-                Log.e("Socketssss", "IOException " + closeException);
-            }catch(Exception e){
-                Log.e("Socketssss", "Exception " + e);
-            }
-            return;
-        }
-        Log.i("ConnectThread", "Calling Connected Thread");
-        cdt = new ConnectedThread(mmSocket);
-        byte[] buffer = null;
-        try {
-            buffer = read(uri, context);
-        }catch(IOException e){
-
-        }
-        cdt.write(buffer);
-        cdt.cancel();
-        cdt = null;
-        Log.i("ConnectAfterWrite", "Connected Thread closed");
-        new BluetoothServer().execute(MainActivity.mBluetoothAdapter);
-        //Trying to close more often
-        // cdt.cancel();
-    }
+//    public void run(Uri uri, Context context){
+//        btAdapter.cancelDiscovery();
+//
+//
+//        try{
+//            if(!mmSocket.isConnected()) {
+//                Log.i("ConnectThread", "Connect Attempt");
+//                mmSocket.connect();
+//            }
+//            else{
+//                Log.i("ConnectThread", "Already Connected");
+//            }
+//
+//        }catch(IOException connectException){
+//            Log.i("run", "connection failure" + connectException);
+//            try{
+//                mmSocket =(BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocketFromRecord", new Class[] {int.class}).invoke(mmDevice,1);
+//                mmSocket.connect();
+//                mmSocket.close();
+//            }catch(IOException closeException){
+//                Log.e("Socketssss", "IOException " + closeException);
+//            }catch(Exception e){
+//                Log.e("Socketssss", "Exception " + e);
+//            }
+//            return;
+//        }
+//        Log.i("ConnectThread", "Calling Connected Thread");
+//        cdt = new ConnectedThread(mmSocket);
+//        byte[] buffer = null;
+//        try {
+//            buffer = read(uri, context);
+//        }catch(IOException e){
+//
+//        }
+//        cdt.write(buffer);
+//        cdt.cancel();
+//        cdt = null;
+//        Log.i("ConnectAfterWrite", "Connected Thread closed");
+//        new BluetoothServer().execute(MainActivity.mBluetoothAdapter);
+//        //Trying to close more often
+//        // cdt.cancel();
+//    }
 
     public void cancel(){
         try{
