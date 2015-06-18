@@ -123,42 +123,7 @@ public class MainActivity extends Activity {
             public void handleMessage(Message msg) {
                 Log.i("Handling", "HandleMessage");
                 byte[] readBuf = (byte[]) msg.obj;
-                Bitmap bmp= BitmapFactory.decodeByteArray(readBuf, 0, readBuf.length);
-                //ImageView image = new ImageView(getApplicationContext());
-                // image.setImageBitmap(bmp);
-
-
-                File photoFile = null;
-                try{
-                    photoFile = createImageFile();
-                    mCurrentPhotoPath = photoFile.getAbsolutePath();
-                }catch (IOException ex){
-                    //Error
-                }
-
-
-
-//                if(photoFile != null){
-//                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-//                    startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-//                }
-                try {
-                    Log.i("HandleMessage", "WritingtoFile");
-
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    bmp.compress(Bitmap.CompressFormat.PNG, 0, bos);
-                    byte [] bitmapdata = bos.toByteArray();
-                    FileOutputStream fos = new FileOutputStream(mCurrentPhotoPath);
-                    fos.write(bitmapdata);
-                    fos.flush();
-                    fos.close();
-                    //This line is Temporary! When timer is introduced the file should not be added to your photos.
-                    galleryAddPic();
-                }catch(FileNotFoundException e){
-                    Log.e("HandleMessage", "File Not Found" + e);
-                }catch(IOException e){
-                    Log.e("HandleMessage", "File Not Found" + e);
-                }
+                //NEED TO MAKE THIS TURN readBuf into a URI
             }
         };
 
@@ -204,23 +169,23 @@ public class MainActivity extends Activity {
     public static BluetoothAdapter getBTAdapter(){
         return mBluetoothAdapter;
     }
-
-    private File createImageFile() throws IOException {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "PNG_" + timestamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName, ".png", storageDir);
-
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-
-        return image;
-    }
-
-    private void galleryAddPic(){
-        File f = new File(mCurrentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
-        sendBroadcast(mediaScanIntent);
-    }
+//
+//    private File createImageFile() throws IOException {
+//        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+//        String imageFileName = "PNG_" + timestamp + "_";
+//        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//        File image = File.createTempFile(imageFileName, ".png", storageDir);
+//
+//        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+//
+//        return image;
+//    }
+//
+//    private void galleryAddPic(){
+//        File f = new File(mCurrentPhotoPath);
+//        Uri contentUri = Uri.fromFile(f);
+//        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
+//        sendBroadcast(mediaScanIntent);
+//    }
 
 }

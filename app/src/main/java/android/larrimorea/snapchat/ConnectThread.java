@@ -42,48 +42,48 @@ public class ConnectThread extends Thread{
     }
 
 
-//    public void run(Uri uri, Context context){
-//        btAdapter.cancelDiscovery();
-//
-//
-//        try{
-//            if(!mmSocket.isConnected()) {
-//                Log.i("ConnectThread", "Connect Attempt");
-//                mmSocket.connect();
-//            }
-//            else{
-//                Log.i("ConnectThread", "Already Connected");
-//            }
-//
-//        }catch(IOException connectException){
-//            Log.i("run", "connection failure" + connectException);
-//            try{
-//                mmSocket =(BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocketFromRecord", new Class[] {int.class}).invoke(mmDevice,1);
-//                mmSocket.connect();
-//                mmSocket.close();
-//            }catch(IOException closeException){
-//                Log.e("Socketssss", "IOException " + closeException);
-//            }catch(Exception e){
-//                Log.e("Socketssss", "Exception " + e);
-//            }
-//            return;
-//        }
-//        Log.i("ConnectThread", "Calling Connected Thread");
-//        cdt = new ConnectedThread(mmSocket);
-//        byte[] buffer = null;
-//        try {
-//            buffer = read(uri, context);
-//        }catch(IOException e){
-//
-//        }
-//        cdt.write(buffer);
-//        cdt.cancel();
-//        cdt = null;
-//        Log.i("ConnectAfterWrite", "Connected Thread closed");
-//        new BluetoothServer().execute(MainActivity.mBluetoothAdapter);
-//        //Trying to close more often
-//        // cdt.cancel();
-//    }
+    public void run(Uri uri, Context context){
+        btAdapter.cancelDiscovery();
+
+
+        try{
+            if(!mmSocket.isConnected()) {
+                Log.i("ConnectThread", "Connect Attempt");
+                mmSocket.connect();
+            }
+            else{
+                Log.i("ConnectThread", "Already Connected");
+            }
+
+        }catch(IOException connectException){
+            Log.i("run", "connection failure" + connectException);
+            try{
+                mmSocket =(BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocketFromRecord", new Class[] {int.class}).invoke(mmDevice,1);
+                mmSocket.connect();
+                mmSocket.close();
+            }catch(IOException closeException){
+                Log.e("Socketssss", "IOException " + closeException);
+            }catch(Exception e){
+                Log.e("Socketssss", "Exception " + e);
+            }
+            return;
+        }
+        Log.i("ConnectThread", "Calling Connected Thread");
+        cdt = new ConnectedThread(mmSocket);
+        byte[] buffer = null;
+        try {
+            buffer = read(uri, context);
+        }catch(IOException e){
+
+        }
+        cdt.write(buffer);
+        cdt.cancel();
+        cdt = null;
+        Log.i("ConnectAfterWrite", "Connected Thread closed");
+        new BluetoothServer().execute(MainActivity.mBluetoothAdapter);
+        //Trying to close more often
+        // cdt.cancel();
+    }
 
     public void cancel(){
         try{
@@ -105,7 +105,8 @@ public class ConnectThread extends Thread{
         inputStream.close();
         reader.close();
 
-        return stringBuilder.toString().getBytes();
+        //NEED TO MAKE THIS JUST SEND A URI
+        //return stringBuilder.toString().getBytes();
     }
 
 }

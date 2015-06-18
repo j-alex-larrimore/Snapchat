@@ -1,6 +1,7 @@
 package android.larrimorea.snapchat;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -23,5 +24,11 @@ public class Inbox extends Activity{
         listView = (ListView)findViewById(R.id.listViewInbox);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayStrings);
         listView.setAdapter(adapter);
+
+
+//        Intent i = new Intent(Intent.ACTION_SEND);
+//        i.setType("image/jpeg");
+//        i.putExtra(Intent.EXTRA_STREAM, uri);
+//        startActivity(Intent.createChooser(i, "Send Image"));
     }
 }

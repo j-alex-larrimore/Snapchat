@@ -41,25 +41,24 @@ public class ConnectedThread extends Thread{
     }
 
     public void run(){
-        byte[] buffer = new byte[1024*1024];
-        byte[] imageBuffer = new byte[4096*4096];
-        int pos = 0;
+        byte[] buffer = new byte[1024];
+        int bytes;
 
         while(true){
             try{
-                int bytes = mmInStream.read(buffer);
-                System.arraycopy(buffer, 0, imageBuffer, pos, bytes);
-                pos += bytes;
+                bytes = mmInStream.read(buffer);
+
+                Log.i("ConnectedThread", "Handling message");
+                MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }catch(IOException e){
                 break;
             }
         }
-        Log.i("ConnectedThread", "Handling message");
-        MainActivity.mHandler.obtainMessage(MESSAGE_READ, pos, -1, imageBuffer).sendToTarget();
     }
 
     //Call from main activity to send data to remote device
     public void write(byte[] bytes){
+        Log.i("Writing", "Bytes " + bytes.length);
         try{
             //Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
             mmOutStream.write(bytes);

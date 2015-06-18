@@ -69,54 +69,11 @@ public class SendPicture extends Activity {
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == REQUEST_ENABLE_BT){
-            if(resultCode == RESULT_OK){
-                Toast.makeText(this, "Bluetooth Connection!", Toast.LENGTH_LONG).show();
-
-
-            }else if(resultCode == RESULT_CANCELED){
-                Toast.makeText(this, "Bluetooth Canceled!", Toast.LENGTH_LONG).show();
-            }else{
-                Toast.makeText(this, "Bluetooth Failed!", Toast.LENGTH_LONG).show();
-            }
-        }
-
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-
-
     public static void setPicture(Uri pic){
 
         selectedPic = pic.toString();
-
-
-
-
-//        File extDir = getExternalFilesDir(null);
-//        File requestFile = new File(extDir, selectedPic);
-//        Intent intent = new Intent();
-//        intent.setAction(Intent.ACTION_SEND);
-//        intent.setType("image/jpeg");
-//        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(requestFile));
-//        startActivity(intent);
-
-
     }
 
-    public static String getPicture(){
-        return selectedPic;
-    }
-
-    public static void setTargetDevice(String target){
-        targetDevice = target;
-    }
-
-    public static String getTargetDevice(){
-        return targetDevice;
-    }
 
     @Override
     protected void onResume() {
