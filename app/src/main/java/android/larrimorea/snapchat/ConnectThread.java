@@ -3,25 +3,14 @@ package android.larrimorea.snapchat;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.content.Context;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 /**
@@ -49,11 +38,6 @@ public class ConnectThread extends Thread{
         }
         mmSocket = temp;
 
-//        //Timer to check our connection to see if it needs to be reconnected
-//        MyTimerTask yourTask = new MyTimerTask();
-//        Timer t = new Timer();
-//        //t.scheduleAtFixedRate(yourTask, 0, 5000);
-//        t.scheduleAtFixedRate(yourTask, 0, 30000);
     }
 
     public void run(Uri uri, Context context){
@@ -118,56 +102,8 @@ public class ConnectThread extends Thread{
         }
         inputStream.close();
         reader.close();
+
         return stringBuilder.toString().getBytes();
-
-
-//        Log.i("read", "project working " + uri.toString());
-//        File extStore = Environment.getExternalStorageDirectory();
-//        final File file = new File(extStore.getAbsolutePath() + uri.getPath());
-//        String ap = file.getAbsolutePath();
-//        byte[] buffer = new byte[(int)file.length()];
-//        InputStream ios = null;
-//        try{
-//            if(file.isFile()) {
-//                Log.i("FileDir ", "File Found!");
-//                ios = new FileInputStream(file);
-//            }else{
-//                Log.i("File dir error", "Path " + ap);
-//            }
-//
-//            //Code below causes null pointer exception
-////            if(ios.read(buffer) == -1){
-////                throw new IOException("EOF reached");
-////            }
-//        }finally {
-//            try{
-//                if (ios != null){
-//                    ios.close();
-//                }
-//            }catch(IOException e){
-//                Log.e("FiletoBuffer", "Error");
-//            }
-//        }
-//
-//        return buffer;
-//    }
-
-
-//    public class MyTimerTask extends TimerTask {
-//        public void run(){
-////            if(!mmSocket.isConnected()){
-////                //ConnectedThread.cancel();
-////                Log.i("ConnectedThread", "Needs a Break");
-////            }else{
-////                Log.i("ConnectedThread", "Still going");
-////            }
-//            if(timerCount == 0){
-//                timerCount++;
-//            }else {
-//                Log.i("MyTimerConnect", "Canceling Connection");
-//                cdt = null;
-//            }
-//        }
     }
 
 }

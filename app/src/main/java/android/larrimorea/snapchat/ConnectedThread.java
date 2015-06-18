@@ -41,8 +41,8 @@ public class ConnectedThread extends Thread{
     }
 
     public void run(){
-        byte[] buffer = new byte[1024];
-        byte[] imageBuffer = new byte[1024*1024];
+        byte[] buffer = new byte[1024*1024];
+        byte[] imageBuffer = new byte[2048*2048];
         int pos = 0;
 
         while(true){
