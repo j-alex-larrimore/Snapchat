@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         mBluetoothAdapter.cancelDiscovery();
-        Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
+       // Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
         super.onPause();
     }
 

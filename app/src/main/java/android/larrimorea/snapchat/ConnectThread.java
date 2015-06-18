@@ -6,14 +6,18 @@ import android.bluetooth.BluetoothSocket;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.content.Context;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Timer;
@@ -52,7 +56,7 @@ public class ConnectThread extends Thread{
 //        t.scheduleAtFixedRate(yourTask, 0, 30000);
     }
 
-    public void run(Uri uri){
+    public void run(Uri uri, Context context){
         btAdapter.cancelDiscovery();
 
 
@@ -68,7 +72,7 @@ public class ConnectThread extends Thread{
         }catch(IOException connectException){
             Log.i("run", "connection failure" + connectException);
             try{
-                mmSocket =(BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(mmDevice,1);
+                mmSocket =(BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocketFromRecord", new Class[] {int.class}).invoke(mmDevice,1);
                 mmSocket.connect();
                 mmSocket.close();
             }catch(IOException closeException){
@@ -82,7 +86,7 @@ public class ConnectThread extends Thread{
         cdt = new ConnectedThread(mmSocket);
         byte[] buffer = null;
         try {
-            buffer = read(uri);
+            buffer = read(uri, context);
         }catch(IOException e){
 
         }
@@ -104,35 +108,49 @@ public class ConnectThread extends Thread{
         }
     }
 
-    public byte[] read(Uri uri) throws IOException{
-        Log.i("read", "project working");
-        final File file = new File(uri.getPath());
-        String ap = file.getAbsolutePath();
-        byte[] buffer = new byte[(int)file.length()];
-        InputStream ios = null;
-        try{
-            if(file.isFile()) {
-                ios = new FileInputStream(file);
-            }else{
-                Log.i("File dir error", "Path " + ap);
-            }
-
-            //Code below causes null pointer exception
-//            if(ios.read(buffer) == -1){
-//                throw new IOException("EOF reached");
-//            }
-        }finally {
-            try{
-                if (ios != null){
-                    ios.close();
-                }
-            }catch(IOException e){
-                Log.e("FiletoBuffer", "Error");
-            }
+    public byte[] read(Uri uri, Context context) throws IOException{
+        InputStream inputStream = context.getContentResolver().openInputStream(uri);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while((line = reader.readLine()) != null){
+            stringBuilder.append(line);
         }
+        inputStream.close();
+        reader.close();
+        return stringBuilder.toString().getBytes();
 
-        return buffer;
-    }
+
+//        Log.i("read", "project working " + uri.toString());
+//        File extStore = Environment.getExternalStorageDirectory();
+//        final File file = new File(extStore.getAbsolutePath() + uri.getPath());
+//        String ap = file.getAbsolutePath();
+//        byte[] buffer = new byte[(int)file.length()];
+//        InputStream ios = null;
+//        try{
+//            if(file.isFile()) {
+//                Log.i("FileDir ", "File Found!");
+//                ios = new FileInputStream(file);
+//            }else{
+//                Log.i("File dir error", "Path " + ap);
+//            }
+//
+//            //Code below causes null pointer exception
+////            if(ios.read(buffer) == -1){
+////                throw new IOException("EOF reached");
+////            }
+//        }finally {
+//            try{
+//                if (ios != null){
+//                    ios.close();
+//                }
+//            }catch(IOException e){
+//                Log.e("FiletoBuffer", "Error");
+//            }
+//        }
+//
+//        return buffer;
+//    }
 
 
 //    public class MyTimerTask extends TimerTask {
@@ -150,6 +168,6 @@ public class ConnectThread extends Thread{
 //                cdt = null;
 //            }
 //        }
-//    }
+    }
 
 }

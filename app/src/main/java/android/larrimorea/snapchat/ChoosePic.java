@@ -61,12 +61,12 @@ public class ChoosePic extends Activity{
                 Uri uri = null;
                 if(data != null){
                     uri = data.getData();
-                   // Log.i(TAG, "Uri: " + uri.toString());
+                    Log.i("PicClicked", "Uri: " + uri.toString());
                    // showImage(uri);
                     SendPicture.setPicture(uri);
                     //Connecting!
                     ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
-                    ct.run(uri);
+                    ct.run(uri, this);
                 }
                 Toast.makeText(this, "Picture Search Success!" + SendPicture.getTargetDevice() + " " + uri.toString(), Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){
