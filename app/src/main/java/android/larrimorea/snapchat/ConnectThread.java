@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.Log;
 import android.content.Context;
@@ -42,7 +43,7 @@ public class ConnectThread extends Thread{
     }
 
 
-    public void run(Uri uri, Context context){
+    public void run(Bitmap bmp, Context context){
         btAdapter.cancelDiscovery();
 
 
@@ -72,7 +73,7 @@ public class ConnectThread extends Thread{
         cdt = new ConnectedThread(mmSocket);
         byte[] buffer = null;
         try {
-            buffer = read(uri, context);
+            buffer = read(bmp, context);
         }catch(IOException e){
 
         }
@@ -94,19 +95,9 @@ public class ConnectThread extends Thread{
         }
     }
 
-    public byte[] read(Uri uri, Context context) throws IOException{
-        InputStream inputStream = context.getContentResolver().openInputStream(uri);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder stringBuilder = new StringBuilder();
-        String line;
-        while((line = reader.readLine()) != null){
-            stringBuilder.append(line);
-        }
-        inputStream.close();
-        reader.close();
-
-        //NEED TO MAKE THIS JUST SEND A URI
-        //return stringBuilder.toString().getBytes();
+    public byte[] read(Bitmap bmp, Context context) throws IOException{
+        Log.i("Connect", "Read");
+        return null;
     }
 
 }

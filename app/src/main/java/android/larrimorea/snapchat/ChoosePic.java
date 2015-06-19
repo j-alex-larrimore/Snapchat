@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -14,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,11 +66,17 @@ public class ChoosePic extends Activity{
                 if(data != null){
                     uri = data.getData();
                     Log.i("PicClicked", "Uri: " + uri.toString());
-                   // showImage(uri);
-                    SendPicture.setPicture(uri);
-                    //Connecting!
-                    ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
-                    ct.run(uri, this);
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                        SendPicture.setPicture(uri);
+                        //Connecting!
+                        ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
+                        ct.run(bitmap, this);
+                    }catch(IOException e){
+                        Log.e("ChoosePic", "Bitmappin" + e);
+                    }
+
+
 
                 }
             }else if(resultCode == RESULT_CANCELED){

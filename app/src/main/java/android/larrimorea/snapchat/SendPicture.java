@@ -69,6 +69,9 @@ public class SendPicture extends Activity {
 
     }
 
+
+
+
     public static void setPicture(Uri pic){
 
         selectedPic = pic.toString();
