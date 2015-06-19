@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 
 /**
@@ -96,8 +97,10 @@ public class ConnectThread extends Thread{
     }
 
     public byte[] read(Bitmap bmp, Context context) throws IOException{
-        Log.i("Connect", "Read");
-        return null;
+        int bytes = bmp.getByteCount();
+        ByteBuffer buffer = ByteBuffer.allocate(bytes);
+        bmp.copyPixelsToBuffer(buffer);
+        byte[] array = buffer.array();
+        return array;
     }
-
 }

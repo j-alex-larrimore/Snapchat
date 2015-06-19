@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
             public void handleMessage(Message msg) {
                 Log.i("Handling", "HandleMessage");
                 byte[] readBuf = (byte[]) msg.obj;
-                //NEED TO MAKE THIS TURN readBuf into a URI
+                receiveImage(readBuf);
             }
         };
 
@@ -163,6 +163,32 @@ public class MainActivity extends Activity {
             }
         }
     };
+
+    private void receiveImage(byte[] bytes){
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        saveImage(bitmap);
+    }
+
+    private void saveImage(Bitmap bitmap){
+        Log.i("SaveImage", "Saviiiiiing");
+        FileOutputStream out = null;
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timestamp + "_";
+        try{
+            out = new FileOutputStream(imageFileName);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+        }catch(Exception e){
+            Log.i("SaveImage", "BadName?" + e);
+        }finally{
+            try{
+                if (out != null){
+                    out.close();
+                }
+            }catch(IOException e){
+                Log.i("SaveImage", "GottaCatchEmAll"  + e);
+            }
+        }
+    }
 
     public static BluetoothAdapter getBTAdapter(){
         return mBluetoothAdapter;
