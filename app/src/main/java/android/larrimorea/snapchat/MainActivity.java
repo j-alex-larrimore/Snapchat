@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -120,10 +121,11 @@ public class MainActivity extends Activity {
 
         mHandler = new Handler() {
             @Override
-            public void handleMessage(Message msg) {
+            public  void handleMessage(Message msg) {
                 Log.i("Handling", "HandleMessage");
                 byte[] readBuf = (byte[]) msg.obj;
                 receiveImage(readBuf);
+
             }
         };
 

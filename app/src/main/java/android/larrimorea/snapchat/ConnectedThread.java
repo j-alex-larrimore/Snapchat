@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,19 +42,21 @@ public class ConnectedThread extends Thread{
     }
 
     public void run(){
-        byte[] buffer = new byte[1024];
-        int bytes;
+        byte[] buffer = new byte[1];
+        int bytes = 0;
+        int i = 0;
 
         while(true){
             try{
                 bytes = mmInStream.read(buffer);
-
-                Log.i("ConnectedThread", "Handling message");
-                MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                buffer = Arrays.copyOfRange(buffer, 0, i);
+                i++;
             }catch(IOException e){
                 break;
             }
         }
+        MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+       // Log.i("ConnectedThread", "Handling message");
     }
 
     //Call from main activity to send data to remote device
