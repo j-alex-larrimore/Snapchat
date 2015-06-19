@@ -78,6 +78,8 @@ public class ConnectThread extends Thread{
         }catch(IOException e){
 
         }
+
+
         cdt.write(buffer);
         cdt.cancel();
         cdt = null;
@@ -97,10 +99,15 @@ public class ConnectThread extends Thread{
     }
 
     public byte[] read(Bitmap bmp, Context context) throws IOException{
-        int bytes = bmp.getByteCount();
-        ByteBuffer buffer = ByteBuffer.allocate(bytes);
-        bmp.copyPixelsToBuffer(buffer);
-        byte[] array = buffer.array();
+//        int bytes = bmp.getByteCount();
+//        ByteBuffer buffer = ByteBuffer.allocate(bytes);
+//        bmp.copyPixelsToBuffer(buffer);
+//        byte[] array = buffer.array();
+        byte[] array = new byte[3];
+        array[0] = 12;
+        array[1] = 13;
+        array[2] = 14;
+
         return array;
     }
 }

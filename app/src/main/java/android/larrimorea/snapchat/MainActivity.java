@@ -48,6 +48,8 @@ public class MainActivity extends Activity {
     public static Handler mHandler;
     private int REQUEST_ENABLE_BT = 1;
 
+    public static byte[] readBuf;
+
     //For receiving files
     String mCurrentPhotoPath;
 
@@ -123,8 +125,7 @@ public class MainActivity extends Activity {
             @Override
             public  void handleMessage(Message msg) {
                 Log.i("Handling", "HandleMessage");
-                byte[] readBuf = (byte[]) msg.obj;
-                receiveImage(readBuf);
+                readBuf = (byte[]) msg.obj;
 
             }
         };
@@ -166,12 +167,17 @@ public class MainActivity extends Activity {
         }
     };
 
-    private void receiveImage(byte[] bytes){
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    public static void receiveImage(){
+        String i = Byte.toString(readBuf[0]);
+        String j = Byte.toString(readBuf[1]);
+        String k = Byte.toString(readBuf[2]);
+       // String l = Byte.toString(readBuf[3]);
+        Log.i("Receiving", "Bytes: " + i + j + k);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(readBuf, 0, readBuf.length);
         saveImage(bitmap);
     }
 
-    private void saveImage(Bitmap bitmap){
+    private static void saveImage(Bitmap bitmap){
         Log.i("SaveImage", "Saviiiiiing");
         FileOutputStream out = null;
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());

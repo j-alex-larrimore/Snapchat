@@ -63,6 +63,7 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
                 if(socket != null){
                     cdt = new ConnectedThread(socket);
                     cdt.run();
+                    //MainActivity.receiveImage();
                     try {
                         Log.i("AcceptThreadRun", "Closing Socket");
                         mmServerSocket.close();
