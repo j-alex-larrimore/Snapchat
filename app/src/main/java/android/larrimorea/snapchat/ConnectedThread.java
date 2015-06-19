@@ -28,9 +28,6 @@ public class ConnectedThread extends Thread{
         OutputStream tempOut = null;
         Log.i("ConnectedThread Init", "Start");
 
-
-
-
         try{
             tempIn = socket.getInputStream();
             tempOut = socket.getOutputStream();
@@ -42,13 +39,16 @@ public class ConnectedThread extends Thread{
     }
 
     public void run(){
-        byte[] buffer = new byte[3];
+        byte[] buffer = new byte[300];
         int bytes;
         while(true){
             try{
                 bytes = mmInStream.read(buffer);
+                Log.i("runnnnn", "true");
                 MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }catch (IOException e){
+
+                Log.i("runnnnn", "false" + e);
                 break;
             }
         }
@@ -70,13 +70,8 @@ public class ConnectedThread extends Thread{
 
     //Call from main activity to send data to remote device
     public void write(byte[] bytes){
-        String i = Byte.toString(bytes[0]);
-        String j = Byte.toString(bytes[1]);
-        String k = Byte.toString(bytes[2]);
-        Log.i("Sending", "Bytes: " + i + j + k);
-        Log.i("Writing", "Bytes " + bytes.length);
         try{
-            //Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
+            Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
             mmOutStream.write(bytes);
         }catch(IOException e){
 

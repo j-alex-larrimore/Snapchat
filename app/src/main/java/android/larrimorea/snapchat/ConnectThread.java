@@ -33,11 +33,12 @@ public class ConnectThread extends Thread{
         mmDevice = device;
         btAdapter = MainActivity.getBTAdapter();
         myUUID = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
+
         try{
             //secure did not work, trying insecure
             temp = device.createInsecureRfcommSocketToServiceRecord(myUUID);
         }catch(IOException e){
-
+            Log.i("Connect", "Ruh Roh" + e);
         }
         mmSocket = temp;
 

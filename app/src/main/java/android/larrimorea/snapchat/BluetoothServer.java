@@ -20,7 +20,7 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
     private Activity activity;
     public UUID myUUID;
     public BluetoothAdapter btAdapter;
-
+    private BluetoothServerSocket mmServerSocket;
     private int timerCount = 0;
     private ConnectedThread cdt;
 
@@ -34,7 +34,6 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
     }
 
     public class AcceptThread extends Thread{
-        private final BluetoothServerSocket mmServerSocket;
 
         public AcceptThread(){
             BluetoothServerSocket temp = null;
@@ -81,13 +80,13 @@ public class BluetoothServer extends AsyncTask<BluetoothAdapter, Void, Void> {
 
 
 
-        public void cancel(){
-            try{
-                mmServerSocket.close();
-            }catch(IOException e){
-
-            }
-        }
+//        public static void cancel(){
+//            try{
+//                mmServerSocket.close();
+//            }catch(IOException e){
+//
+//            }
+//        }
     }
 
 }
