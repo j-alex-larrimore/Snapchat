@@ -39,44 +39,34 @@ public class ConnectedThread extends Thread{
     }
 
     public void run(){
-        byte[] buffer = new byte[300];
+        byte[] buffer = new byte[3];
         int bytes;
         while(true){
             try{
                 bytes = mmInStream.read(buffer);
-                Log.i("runnnnn", "true");
                 MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }catch (IOException e){
-
-                Log.i("runnnnn", "false" + e);
                 break;
             }
         }
-//        int bytes = 0; //sets to 0 to avoid error
-//        int i = 0;
-//
-//        while(true){
-//            try{
-//                bytes = mmInStream.read(buffer);
-//                buffer = Arrays.copyOfRange(buffer, 0, i);
-//                i++;
-//            }catch(IOException e){
-//                break;
-//            }
-//        }
-//        MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-//       // Log.i("ConnectedThread", "Handling message");
+
+        MainActivity.receiveImage();
     }
 
     //Call from main activity to send data to remote device
     public void write(byte[] bytes){
+        Log.i("Writing", "Bytes " + bytes.length);
         try{
-            Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
+            //Log.i("ConnectedThread - Write", "Writing" + bytes.toString());
             mmOutStream.write(bytes);
         }catch(IOException e){
 
         }
     }
+
+
+
+
 
     //Call from the main activity to shutdown the connection
     public static void cancel(){
@@ -86,5 +76,6 @@ public class ConnectedThread extends Thread{
 
         }
     }
+
 
 }

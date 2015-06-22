@@ -3,7 +3,6 @@ package android.larrimorea.snapchat;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -49,8 +48,7 @@ public class MainActivity extends Activity {
     public static Handler mHandler;
     private int REQUEST_ENABLE_BT = 1;
 
-
-    public static byte[] readBuf;
+    private static byte[] readBuf;
 
     //For receiving files
     String mCurrentPhotoPath;
@@ -126,9 +124,8 @@ public class MainActivity extends Activity {
         mHandler = new Handler() {
             @Override
             public  void handleMessage(Message msg) {
-                Log.i("Handling", "HandleMessage");
                 readBuf = (byte[]) msg.obj;
-
+            Log.i("Handlin", "Stuff");
             }
         };
 
@@ -141,13 +138,13 @@ public class MainActivity extends Activity {
         startActivity(discoverableIntent);
 
 
-       // SendPicture.AcceptThread.start();
+        // SendPicture.AcceptThread.start();
     }
 
     @Override
     protected void onPause() {
         mBluetoothAdapter.cancelDiscovery();
-       // Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
+        // Toast.makeText(this, "Discovery Canceled", Toast.LENGTH_LONG).show();
         super.onPause();
     }
 
@@ -173,7 +170,7 @@ public class MainActivity extends Activity {
         String i = Byte.toString(readBuf[0]);
         String j = Byte.toString(readBuf[1]);
         String k = Byte.toString(readBuf[2]);
-       // String l = Byte.toString(readBuf[3]);
+        // String l = Byte.toString(readBuf[3]);
         Log.i("Receiving", "Bytes: " + i + j + k);
         Bitmap bitmap = BitmapFactory.decodeByteArray(readBuf, 0, readBuf.length);
         saveImage(bitmap);

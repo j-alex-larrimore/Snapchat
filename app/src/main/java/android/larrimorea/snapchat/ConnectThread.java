@@ -33,12 +33,11 @@ public class ConnectThread extends Thread{
         mmDevice = device;
         btAdapter = MainActivity.getBTAdapter();
         myUUID = UUID.fromString("10d28dc0-105f-11e5-b939-0800200c9a66");
-
         try{
             //secure did not work, trying insecure
             temp = device.createInsecureRfcommSocketToServiceRecord(myUUID);
         }catch(IOException e){
-            Log.i("Connect", "Ruh Roh" + e);
+
         }
         mmSocket = temp;
 
@@ -79,8 +78,6 @@ public class ConnectThread extends Thread{
         }catch(IOException e){
 
         }
-
-
         cdt.write(buffer);
         cdt.cancel();
         cdt = null;
@@ -100,15 +97,19 @@ public class ConnectThread extends Thread{
     }
 
     public byte[] read(Bitmap bmp, Context context) throws IOException{
-//        int bytes = bmp.getByteCount();
-//        ByteBuffer buffer = ByteBuffer.allocate(bytes);
-//        bmp.copyPixelsToBuffer(buffer);
-//        byte[] array = buffer.array();
         byte[] array = new byte[3];
         array[0] = 12;
         array[1] = 13;
         array[2] = 14;
 
+        return array;
+    }
+
+    public byte[] read(Bitmap bmp, Context context) throws IOException{
+        int bytes = bmp.getByteCount();
+        ByteBuffer buffer = ByteBuffer.allocate(bytes);
+        bmp.copyPixelsToBuffer(buffer);
+        byte[] array = buffer.array();
         return array;
     }
 }
