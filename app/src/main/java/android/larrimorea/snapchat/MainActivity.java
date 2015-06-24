@@ -12,6 +12,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.parse.Parse;
+import com.parse.ParseObject;
+
 
 public class MainActivity extends Activity {
     protected ProgressBar progressBar;
@@ -60,10 +63,14 @@ public class MainActivity extends Activity {
         });
 
 
-        //0 instead of a number of seconds means that this android will be permanently set to discoverable
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-        startActivity(discoverableIntent);
+        Parse.enableLocalDatastore(this);
+
+        Parse.initialize(this, "qh36Gr8U0NeaEEk8V7WyuOOvB6H6JnRsk56fsddW", "t1GXIOyuHB2yYaQMxVwPnEaPCCmEnmGEcDIp9QQc");
+
+        ParseObject testObject = new ParseObject("TestObject");
+        testObject.put("foo", "bar");
+        testObject.saveInBackground();
+
 
     }
 }
