@@ -72,6 +72,7 @@ public class ConnectThread extends Thread{
         }
         Log.i("ConnectThread", "Calling Connected Thread");
         cdt = new ConnectedThread(mmSocket);
+        cdt.start();
         byte[] buffer = null;
         try {
             buffer = read(bmp, context);
@@ -97,19 +98,14 @@ public class ConnectThread extends Thread{
     }
 
     public byte[] read(Bitmap bmp, Context context) throws IOException{
-        byte[] array = new byte[3];
-        array[0] = 12;
-        array[1] = 13;
-        array[2] = 14;
+//        int bytes = bmp.getByteCount();
+//        ByteBuffer buffer = ByteBuffer.allocate(bytes);
+//        bmp.copyPixelsToBuffer(buffer);
+//        return buffer.array();
 
-        return array;
-    }
-
-    public byte[] read(Bitmap bmp, Context context) throws IOException{
-        int bytes = bmp.getByteCount();
-        ByteBuffer buffer = ByteBuffer.allocate(bytes);
-        bmp.copyPixelsToBuffer(buffer);
-        byte[] array = buffer.array();
-        return array;
+        String message = "Please work";
+        byte[] send = message.getBytes();
+        //mChatService.write(send);
+        return send;
     }
 }

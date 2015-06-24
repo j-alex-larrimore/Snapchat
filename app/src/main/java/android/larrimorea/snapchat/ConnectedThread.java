@@ -21,6 +21,7 @@ public class ConnectedThread extends Thread{
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private static int MESSAGE_READ = 2;
+    private static int MESSAGE_DONE = 3;
 
     public ConnectedThread(BluetoothSocket socket){
         mmSocket = socket;
@@ -32,7 +33,7 @@ public class ConnectedThread extends Thread{
             tempIn = socket.getInputStream();
             tempOut = socket.getOutputStream();
         }catch(IOException e){
-
+            Log.e("ConnectedThread", "socket", e);
         }
         mmInStream = tempIn;
         mmOutStream = tempOut;
@@ -46,11 +47,14 @@ public class ConnectedThread extends Thread{
                 bytes = mmInStream.read(buffer);
                 MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }catch (IOException e){
+                Log.e("ConnectedThread", "run", e);
                 break;
             }
         }
-
-        MainActivity.receiveImage();
+        MainActivity.mHandler.obtainMessage(MESSAGE_DONE, -1, -1, buffer).sendToTarget();
+        //Message Complete Here
+        //MainActivity.mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+        //MainActivity.receiveImage();
     }
 
     //Call from main activity to send data to remote device

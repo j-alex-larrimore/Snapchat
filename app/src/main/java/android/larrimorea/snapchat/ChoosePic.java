@@ -71,7 +71,9 @@ public class ChoosePic extends Activity{
                         SendPicture.setPicture(uri);
                         //Connecting!
                         ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
+                        ct.start();
                         ct.run(bitmap, this);
+                        //ct.start();
                     }catch(IOException e){
                         Log.e("ChoosePic", "Bitmappin" + e);
                     }

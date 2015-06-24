@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,7 +39,7 @@ import java.util.Set;
 import java.util.TimerTask;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     protected ProgressBar progressBar;
     protected ListView listView;
 
@@ -124,8 +125,19 @@ public class MainActivity extends Activity {
         mHandler = new Handler() {
             @Override
             public  void handleMessage(Message msg) {
-                readBuf = (byte[]) msg.obj;
-            Log.i("Handlin", "Stuff");
+                switch (msg.what) {
+                    case 2: {
+                        //readBuf = (byte[]) msg.obj;
+                        Log.i("Handlin", "Stuff");
+                    }
+                    default: {
+                        //receiveImage();
+                        readBuf = (byte[]) msg.obj;
+                        // construct a string from the valid bytes in the buffer
+                        String readMessage = new String(readBuf, 0, msg.arg1);
+                        Log.i("Handlin", "Message Received");
+                    }
+                }
             }
         };
 
@@ -167,6 +179,7 @@ public class MainActivity extends Activity {
     };
 
     public static void receiveImage(){
+
         String i = Byte.toString(readBuf[0]);
         String j = Byte.toString(readBuf[1]);
         String k = Byte.toString(readBuf[2]);
