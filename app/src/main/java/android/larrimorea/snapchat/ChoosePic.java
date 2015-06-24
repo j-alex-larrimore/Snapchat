@@ -1,14 +1,10 @@
 package android.larrimorea.snapchat;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -16,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +22,6 @@ public class ChoosePic extends Activity{
     private static final int READ_REQUEST_CODE = 42;
     private static ArrayList<Image> arrayImages = new ArrayList<Image>();
     protected ListView listView;
-    private BluetoothAdapter btAdapter;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,22 +59,11 @@ public class ChoosePic extends Activity{
                 Uri uri = null;
                 if(data != null){
                     uri = data.getData();
-                    Log.i("PicClicked", "Uri: " + uri.toString());
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-                        SendPicture.setPicture(uri);
-                        //Connecting!
-                        ConnectThread ct = new ConnectThread(SendPicture.clickedDevice);
-                        ct.start();
-                        ct.run(bitmap, this);
-                        //ct.start();
-                    }catch(IOException e){
-                        Log.e("ChoosePic", "Bitmappin" + e);
-                    }
-
-
-
+                   // Log.i(TAG, "Uri: " + uri.toString());
+                   // showImage(uri);
+                    SendPicture.setPicture(uri);
                 }
+                Toast.makeText(this, "Picture Search Success!" + SendPicture.getTargetDevice() + " " + uri.toString(), Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){
                 Toast.makeText(this, "Picture Search Canceled!", Toast.LENGTH_LONG).show();
             }else{

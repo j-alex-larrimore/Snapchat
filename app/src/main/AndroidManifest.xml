@@ -8,14 +8,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.NFC"/>
-
 
     <!--required false allows users to see pictures without the ability to post them-->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
-
-    <uses-feature android:name="android.hardware.nfc"
-        android:required="true" />
 
     <!--for audio recording-->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>

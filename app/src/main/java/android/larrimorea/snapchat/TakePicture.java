@@ -25,7 +25,9 @@ import java.util.Date;
 
 public class TakePicture extends Activity {
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    //private MediaScannerConnection msc;
     static final int REQUEST_TAKE_PHOTO = 1;
+    //private Uri fileURI;
     String mCurrentPhotoPath;
 
     @Override
@@ -34,6 +36,14 @@ public class TakePicture extends Activity {
         setContentView(R.layout.take_picture);
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+       // File imagesFolder = new File(Environment.getRootDirectory(), "MyImages");
+
+        //imagesFolder.mkdirs();
+        //File image = new File(imagesFolder, "image1.jpg");
+
+        //fileURI = Uri.fromFile(image);
+
+        //intent.putExtra(MediaStore.EXTRA_OUTPUT, fileURI);
         if(intent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try{
@@ -80,9 +90,12 @@ public class TakePicture extends Activity {
     }
 
     private void galleryAddPic(){
+        //Code below scans media and makes it show correctly
+
         File f = new File(mCurrentPhotoPath);
         Uri contentUri = Uri.fromFile(f);
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
+        //mediaScanIntent.setData(contentUri);
         sendBroadcast(mediaScanIntent);
     }
 
