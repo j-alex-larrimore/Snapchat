@@ -25,6 +25,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Enable Local Datastore.
+        Parse.enableLocalDatastore(this);
+
+        Parse.initialize(this, "qh36Gr8U0NeaEEk8V7WyuOOvB6H6JnRsk56fsddW", "t1GXIOyuHB2yYaQMxVwPnEaPCCmEnmGEcDIp9QQc");
+
+
         String[] arrayStrings = new String[]{
                 "Inbox",
                 "Take a Picture",
@@ -49,7 +55,8 @@ public class MainActivity extends Activity {
                     Intent intent = new Intent(getApplicationContext(), TakePicture.class);
                     startActivity(intent);
                 }else if(id==2){
-                    Intent intent = new Intent(getApplicationContext(), SendPicture.class);
+                    //Intent intent = new Intent(getApplicationContext(), SendPicture.class);
+                    Intent intent = new Intent(getApplicationContext(), ChoosePic.class);
                     startActivity(intent);
                 }else{
                     //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();

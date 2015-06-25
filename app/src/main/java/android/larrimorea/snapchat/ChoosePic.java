@@ -2,9 +2,12 @@ package android.larrimorea.snapchat;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -12,6 +15,13 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.parse.GetDataCallback;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.SaveCallback;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,15 +37,6 @@ public class ChoosePic extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.choose_pic);
 
-//        listView = (ListView)findViewById(R.id.listViewChoose);
-//        //Intent intent = getIntent();
-//        PicAdapter adapter = new PicAdapter(this, getPics());
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//
-//            }
-//        });
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
@@ -57,13 +58,30 @@ public class ChoosePic extends Activity{
         if(requestCode == READ_REQUEST_CODE){
             if(resultCode == RESULT_OK){
                 Uri uri = null;
-                if(data != null){
+                Bitmap bitmap = null;
+                if(data != null) {
                     uri = data.getData();
-                   // Log.i(TAG, "Uri: " + uri.toString());
-                   // showImage(uri);
+
                     SendPicture.setPicture(uri);
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                    } catch (Exception e) {
+                        Log.e("Error", "activityresult " + e);
+                    }
+                    byte[] scaledData;
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+                    scaledData = stream.toByteArray();
+                    ParseFile photoFile = new ParseFile("meal_photo.jpg", scaledData);
+                    ParseObject testObject = new ParseObject("TestObject");
+                    testObject.put("pic", photoFile);
+                    testObject.saveInBackground();
+
+
+
+
                 }
-                Toast.makeText(this, "Picture Search Success!" + SendPicture.getTargetDevice() + " " + uri.toString(), Toast.LENGTH_LONG).show();
             }else if(resultCode == RESULT_CANCELED){
                 Toast.makeText(this, "Picture Search Canceled!", Toast.LENGTH_LONG).show();
             }else{
