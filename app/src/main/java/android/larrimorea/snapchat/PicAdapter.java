@@ -12,6 +12,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class PicAdapter extends ArrayAdapter<Image> {
+
+
     public PicAdapter(Context context,  ArrayList<Image> images) {
         super(context, 0, images);
     }

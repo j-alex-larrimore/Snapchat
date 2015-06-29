@@ -7,28 +7,20 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
-import android.view.View;
-import android.webkit.WebView;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.parse.GetDataCallback;
-import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
-import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Alex on 6/11/2015.
  */
-public class ChoosePic extends Activity{
+public class ChoosePicFragment extends Activity{
     private static final int READ_REQUEST_CODE = 42;
     private static ArrayList<Image> arrayImages = new ArrayList<Image>();
     protected ListView listView;
@@ -62,7 +54,7 @@ public class ChoosePic extends Activity{
                 if(data != null) {
                     uri = data.getData();
 
-                    SendPicture.setPicture(uri);
+                    SendPictureFragment.setPicture(uri);
                     try {
                         bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
                     } catch (Exception e) {
@@ -88,7 +80,7 @@ public class ChoosePic extends Activity{
                 Toast.makeText(this, "Picture Search Failed!", Toast.LENGTH_LONG).show();
             }
         }
-        Intent intent = new Intent(getApplicationContext(), SendPicture.class);
+        Intent intent = new Intent(getApplicationContext(), SendPictureFragment.class);
         startActivity(intent);
 
         //super.onActivityResult(requestCode, resultCode, data);
