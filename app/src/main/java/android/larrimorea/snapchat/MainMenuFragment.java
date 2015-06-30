@@ -14,6 +14,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.parse.ParseUser;
+
 
 public class MainMenuFragment extends Fragment{
     private int LOGGED_IN = 0;
@@ -24,6 +26,7 @@ public class MainMenuFragment extends Fragment{
     private ArrayAdapter<String> mAdapter;
     private String[] inArrayStrings;
     private String[] outArrayStrings;
+    private ParseUser currentUser;
 
     @Nullable
     @Override
@@ -111,6 +114,9 @@ public class MainMenuFragment extends Fragment{
         if(resultCode == getActivity().RESULT_OK){
             if(requestCode == LOGGED_IN){
                 loggedIn = true;
+
+                //currentUser = (ParseUser)data.getSerializableExtra("Result");
+                //Log.i("MM", "user: " + currentUser.getUsername());
                 setMenu();
                 Log.i("MM", "LOGGED IN");
             }else if(requestCode == LOGGED_OUT){
@@ -130,5 +136,13 @@ public class MainMenuFragment extends Fragment{
 
     public void setLoggedIn(boolean loggedIn) {
         this.loggedIn = loggedIn;
+    }
+
+    public void setCurrentUser(ParseUser u){
+        currentUser = u;
+    }
+
+    public ParseUser getCurrentUser() {
+        return currentUser;
     }
 }

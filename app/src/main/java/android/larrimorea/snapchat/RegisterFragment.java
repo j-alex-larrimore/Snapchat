@@ -14,8 +14,15 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
+
+import java.util.List;
 
 /**
  * Created by Alex on 6/29/2015.
@@ -27,7 +34,7 @@ public class RegisterFragment extends Fragment {
     private EditText mPasswordField;
     private String mUsername;
     private String mPassword;
-    private User user;
+    private ParseUser user;
 
 
     @Nullable
@@ -40,19 +47,26 @@ public class RegisterFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(mUsername != null && mPassword != null) {
-                    user = new User();
+                    user = new ParseUser();
                     user.setUsername(mUsername);
                     user.setPassword(mPassword);
-                    try {
-                        user.save();
-                    }catch(ParseException p){
-                        Log.e("Register", "Parse error " + p);
-                    }
+                        user.signUpInBackground(new SignUpCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if (e == null) {
+                                    Intent returnIntent = new Intent();
+                                    returnIntent.putExtra("Result", mUsername);
+                                    // returnIntent.putExtra("Result");
+                                    getActivity().setResult(getActivity().RESULT_OK, returnIntent);
+                                    getActivity().finish();
+                                } else {
+                                    Log.e("Register", "CreateUserError " + e);
+                                    Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
 
-                    Intent returnIntent = new Intent();
-                    //returnIntent.putExtra("Result", "true");
-                    getActivity().setResult(getActivity().RESULT_OK, returnIntent);
-                    getActivity().finish();
+
                 }
             }
         });
@@ -97,7 +111,7 @@ public class RegisterFragment extends Fragment {
         return view;
     }
 
-    public User getCurrentUser(){
+    public ParseUser getCurrentUser(){
         return user;
     }
 }
