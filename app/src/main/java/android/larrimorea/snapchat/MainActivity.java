@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.parse.Parse;
+import com.parse.ParseObject;
 
 
 public class MainActivity extends SingleFragmentActivity {
@@ -30,6 +31,8 @@ public class MainActivity extends SingleFragmentActivity {
         super.onCreate(savedInstanceState);
 
         Parse.enableLocalDatastore(this);
+
+        ParseObject.registerSubclass(User.class);
 
         Parse.initialize(this, "qh36Gr8U0NeaEEk8V7WyuOOvB6H6JnRsk56fsddW", "t1GXIOyuHB2yYaQMxVwPnEaPCCmEnmGEcDIp9QQc");
     }

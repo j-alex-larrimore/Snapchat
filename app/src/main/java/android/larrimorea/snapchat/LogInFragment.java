@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +19,10 @@ import android.widget.EditText;
 public class LogInFragment extends Fragment {
 
     private Button mLogInButton;
-    private EditText mUsername;
-    private EditText mPassword;
+    private EditText mUsernameField;
+    private EditText mPasswordField;
+    private String mUsername;
+    private String mPassword;
 
     @Nullable
     @Override
@@ -35,8 +39,43 @@ public class LogInFragment extends Fragment {
                 getActivity().finish();
             }
         });
+        mUsernameField = (EditText)view.findViewById(R.id.username);
 
+        mUsernameField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mUsername = s.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        mPasswordField = (EditText)view.findViewById(R.id.password);
+
+        mPasswordField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mPassword = s.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         return view;
     }
