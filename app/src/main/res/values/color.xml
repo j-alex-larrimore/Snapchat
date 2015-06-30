@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="yellow">#fffffb33</color>
+    <color name="dark_yellow">#ffffe105</color>
+    <color name="gray">#576572</color>
+    <color name="background">#ffb7b703</color>
+    <color name="actionbar_text">#576572</color>
+</resources>
