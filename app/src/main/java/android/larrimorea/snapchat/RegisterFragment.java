@@ -55,8 +55,6 @@ public class RegisterFragment extends Fragment {
                             public void done(ParseException e) {
                                 if (e == null) {
                                     Intent returnIntent = new Intent();
-                                    returnIntent.putExtra("Result", mUsername);
-                                    // returnIntent.putExtra("Result");
                                     getActivity().setResult(getActivity().RESULT_OK, returnIntent);
                                     getActivity().finish();
                                 } else {

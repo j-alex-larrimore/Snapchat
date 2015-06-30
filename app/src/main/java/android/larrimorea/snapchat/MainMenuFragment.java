@@ -114,12 +114,11 @@ public class MainMenuFragment extends Fragment{
         if(resultCode == getActivity().RESULT_OK){
             if(requestCode == LOGGED_IN){
                 loggedIn = true;
-
-                //currentUser = (ParseUser)data.getSerializableExtra("Result");
-                //Log.i("MM", "user: " + currentUser.getUsername());
+                currentUser = ParseUser.getCurrentUser();
+                Log.i("MM", "user: " + ParseUser.getCurrentUser().getUsername());
                 setMenu();
-                Log.i("MM", "LOGGED IN");
             }else if(requestCode == LOGGED_OUT){
+                ParseUser.getCurrentUser().logOut();
                 loggedIn = false;
                 setMenu();
                 Log.i("MM", "LOGGED OUT");

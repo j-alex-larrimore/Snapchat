@@ -7,11 +7,19 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import com.parse.LogInCallback;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
 
 /**
  * Created by Alex on 6/29/2015.
@@ -33,10 +41,21 @@ public class LogInFragment extends Fragment {
         mLogInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent returnIntent = new Intent();
-                //returnIntent.putExtra("Result", "true");
-                getActivity().setResult(getActivity().RESULT_OK, returnIntent);
-                getActivity().finish();
+                if(mUsername != null && mPassword != null) {
+                    ParseUser.logInInBackground(mUsername, mPassword, new LogInCallback() {
+                        @Override
+                        public void done(ParseUser parseUser, ParseException e) {
+                            if (e == null) {
+                                Intent returnIntent = new Intent();
+                                getActivity().setResult(getActivity().RESULT_OK, returnIntent);
+                                getActivity().finish();
+                            } else {
+                                Log.e("Login", "Log In Error " + e);
+                                Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
             }
         });
         mUsernameField = (EditText)view.findViewById(R.id.username);
