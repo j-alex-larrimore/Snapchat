@@ -19,10 +19,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+import com.parse.ProgressCallback;
+import com.parse.SaveCallback;
+import com.parse.SignUpCallback;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Alex on 6/9/2015.
@@ -35,6 +47,7 @@ public class TakePictureFragment extends Fragment {
     static final int REQUEST_TAKE_PHOTO = 1;
     //private Uri fileURI;
     String mCurrentPhotoPath;
+    String imageFileName;
 
     @Nullable
     @Override
@@ -64,6 +77,7 @@ public class TakePictureFragment extends Fragment {
         if(requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE){
             if(resultCode == getActivity().RESULT_OK){
                 galleryAddPic();
+                parseAddPic();
                 Toast.makeText(getActivity(), "Image Saved!", Toast.LENGTH_LONG).show();
             }else if(resultCode == getActivity().RESULT_CANCELED){
                 Toast.makeText(getActivity(), "Image capture Canceled!", Toast.LENGTH_LONG).show();
@@ -77,7 +91,7 @@ public class TakePictureFragment extends Fragment {
 
     private File createImageFile() throws IOException{
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timestamp + "_";
+        imageFileName = "JPEG_" + timestamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
 
@@ -94,6 +108,37 @@ public class TakePictureFragment extends Fragment {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
         //mediaScanIntent.setData(contentUri);
         getActivity().sendBroadcast(mediaScanIntent);
+    }
+
+    private void parseAddPic(){
+        Bitmap bitmap = null;
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), contentUri);
+        } catch (Exception e) {
+            Log.e("Error", "activityresult " + e);
+        }
+        byte[] scaledData;
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        scaledData = stream.toByteArray();
+        final ParseFile photoFile = new ParseFile(imageFileName, scaledData);
+        photoFile.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(com.parse.ParseException e) {
+                if(e==null) {
+                    ParseUser.getCurrentUser().add("photos", photoFile);
+                    ParseUser.getCurrentUser().saveInBackground();
+                }else{
+                    Log.e("TakePictureFragment", "ParseAddPic" + e);
+                }
+            }
+        });
+
+
+
+
     }
 
 

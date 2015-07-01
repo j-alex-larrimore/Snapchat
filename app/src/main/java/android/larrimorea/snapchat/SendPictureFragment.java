@@ -23,9 +23,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Alex on 6/9/2015.
- */
+
 public class SendPictureFragment extends Fragment {
     private List<String> arrayStrings  = new ArrayList<String>();
     private ArrayAdapter<String> mArrayAdapter;
