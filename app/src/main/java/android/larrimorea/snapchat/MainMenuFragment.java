@@ -16,8 +16,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
 
 import java.util.List;
@@ -32,6 +35,7 @@ public class MainMenuFragment extends Fragment{
     private ArrayAdapter<String> mAdapter;
     private String[] inArrayStrings;
     private String[] outArrayStrings;
+    private ParseUser mFriend;
 
     @Nullable
     @Override
@@ -52,29 +56,17 @@ public class MainMenuFragment extends Fragment{
 
         listView = (ListView) view.findViewById(R.id.listView);
 
-        updateFriends();
-
         setMenu();
 
         return view;
     }
 
-    public void updateFriends(){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequests");
-        query.whereEqualTo("From", ParseUser.getCurrentUser().getUsername());
-        query.whereEqualTo("Accepted", true);
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> list, com.parse.ParseException e) {
-                if (e == null) {
-                    fillFriendRequests(list);
-                    displayFriendRequests();
-                } else {
-                    Toast.makeText(getActivity(), "No Friend Requests Accepted", Toast.LENGTH_SHORT);
-                    Log.e("score", "Error: " + e.getMessage());
-                }
-            }
-        });
+    private void deleteRequest(ParseObject request) {
+        try {
+            request.delete();
+        }catch(ParseException e){
+            Log.e("Main", "DeleteRequest error " + e);
+        }
     }
 
     public void setMenu(){
@@ -86,6 +78,8 @@ public class MainMenuFragment extends Fragment{
     }
 
     public void loggedIn(){
+        updateFriends();
+
         mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, inArrayStrings);
         listView.setAdapter(mAdapter);
 
@@ -108,6 +102,46 @@ public class MainMenuFragment extends Fragment{
                     //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
                 }
 
+            }
+        });
+    }
+
+    private void updateFriends(){
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequests");
+        query.whereEqualTo("From", ParseUser.getCurrentUser().getUsername());
+        query.whereEqualTo("Accepted", true);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, com.parse.ParseException e) {
+                if (e == null) {
+                    for (ParseObject ob : list) {
+                        updateFriendList(ob);
+                        deleteRequest(ob);
+                    }
+                } else {
+                    Toast.makeText(getActivity(), "No Friend Requests Accepted", Toast.LENGTH_SHORT);
+                    Log.e("score", "Error: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void updateFriendList(ParseObject request){
+        mFriend = null;
+        ParseQuery<ParseUser> query = ParseUser.getQuery();
+        query.whereEqualTo("username", request.getString("To"));
+        query.getFirstInBackground(new GetCallback<ParseUser>() {
+            @Override
+            public void done(ParseUser parseUser, com.parse.ParseException e) {
+                if (e == null) {
+                    mFriend = parseUser;
+                    ParseRelation<ParseUser> relation = ParseUser.getCurrentUser().getRelation("friends");
+                    relation.add(mFriend);
+                    ParseUser.getCurrentUser().saveInBackground();
+                } else {
+                    Log.e("inbox", "getFriendError: " + e.getMessage());
+
+                }
             }
         });
     }
