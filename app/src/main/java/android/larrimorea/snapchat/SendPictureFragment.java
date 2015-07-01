@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.GetCallback;
+import com.parse.Parse;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
@@ -168,9 +169,15 @@ public class SendPictureFragment extends Fragment {
     }
 
     public void sendFriendRequest(ParseUser user){
-            ParseRelation<ParseUser> relation = ParseUser.getCurrentUser().getRelation("friendrequests");
-            relation.add(user);
-            ParseUser.getCurrentUser().saveInBackground();
-            Log.i("SendPicture", "Sending Friend Request to " + user.getUsername());
+        ParseObject fr = new ParseObject("FriendRequests");
+        fr.put("From", ParseUser.getCurrentUser().getUsername());
+        fr.put("To", user.getUsername());
+        fr.saveInBackground();
+
+
+//            ParseRelation<ParseUser> relation = ParseUser.getCurrentUser().getRelation("friendrequests");
+//            relation.add(user);
+//            ParseUser.getCurrentUser().saveInBackground();
+        Log.i("SendPicture", "Sending Friend Request to " + user.getUsername());
     }
 }
