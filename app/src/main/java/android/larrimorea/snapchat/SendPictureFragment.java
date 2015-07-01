@@ -152,13 +152,11 @@ public class SendPictureFragment extends Fragment {
     public void searchForFriend(){
         ParseQuery<ParseUser> query = ParseUser.getQuery();
         query.whereEqualTo("username", mFriendReqName);
-        Log.i("SendPicFrag", "Options" + mFriendReqName);
         query.getFirstInBackground(new GetCallback<ParseUser>() {
             @Override
             public void done(ParseUser user, com.parse.ParseException e) {
 
                 if (e == null) {
-                    Log.i("SendPictureFragment", "Found!");
                     sendFriendRequest(user);
                 } else {
                     Toast.makeText(getActivity(), "Friend not found!", Toast.LENGTH_SHORT).show();
@@ -175,9 +173,6 @@ public class SendPictureFragment extends Fragment {
         fr.saveInBackground();
 
 
-//            ParseRelation<ParseUser> relation = ParseUser.getCurrentUser().getRelation("friendrequests");
-//            relation.add(user);
-//            ParseUser.getCurrentUser().saveInBackground();
         Log.i("SendPicture", "Sending Friend Request to " + user.getUsername());
     }
 }
