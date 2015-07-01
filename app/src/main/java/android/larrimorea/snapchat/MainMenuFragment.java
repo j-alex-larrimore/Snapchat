@@ -13,8 +13,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.parse.FindCallback;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.util.List;
 
 
 public class MainMenuFragment extends Fragment{
@@ -26,7 +32,6 @@ public class MainMenuFragment extends Fragment{
     private ArrayAdapter<String> mAdapter;
     private String[] inArrayStrings;
     private String[] outArrayStrings;
-    private ParseUser currentUser;
 
     @Nullable
     @Override
@@ -47,9 +52,29 @@ public class MainMenuFragment extends Fragment{
 
         listView = (ListView) view.findViewById(R.id.listView);
 
+        updateFriends();
+
         setMenu();
 
         return view;
+    }
+
+    public void updateFriends(){
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequests");
+        query.whereEqualTo("From", ParseUser.getCurrentUser().getUsername());
+        query.whereEqualTo("Accepted", true);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, com.parse.ParseException e) {
+                if (e == null) {
+                    fillFriendRequests(list);
+                    displayFriendRequests();
+                } else {
+                    Toast.makeText(getActivity(), "No Friend Requests Accepted", Toast.LENGTH_SHORT);
+                    Log.e("score", "Error: " + e.getMessage());
+                }
+            }
+        });
     }
 
     public void setMenu(){
@@ -76,10 +101,10 @@ public class MainMenuFragment extends Fragment{
                 } else if (id == 2) {
                     Intent intent = new Intent(getActivity(), SendPictureActivity.class);
                     startActivity(intent);
-                } else if(id == 3) {
+                } else if (id == 3) {
                     Intent intent = new Intent(getActivity(), LogOutActivity.class);
                     startActivityForResult(intent, LOGGED_OUT);
-                }else {
+                } else {
                     //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
                 }
 
@@ -114,7 +139,6 @@ public class MainMenuFragment extends Fragment{
         if(resultCode == getActivity().RESULT_OK){
             if(requestCode == LOGGED_IN){
                 loggedIn = true;
-                currentUser = ParseUser.getCurrentUser();
                 Log.i("MM", "user: " + ParseUser.getCurrentUser().getUsername());
                 setMenu();
             }else if(requestCode == LOGGED_OUT){
@@ -137,11 +161,5 @@ public class MainMenuFragment extends Fragment{
         this.loggedIn = loggedIn;
     }
 
-    public void setCurrentUser(ParseUser u){
-        currentUser = u;
-    }
 
-    public ParseUser getCurrentUser() {
-        return currentUser;
-    }
 }
