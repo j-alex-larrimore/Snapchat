@@ -45,29 +45,64 @@ public class SendPictureFragment extends Fragment {
     protected ListView listView;
     private static Uri selectedPic = null;
     private String mFriendReqName;
+    private View mView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.send_image, container, false);
+        mView = inflater.inflate(R.layout.send_image, container, false);
 
-        listView = (ListView)view.findViewById(R.id.listViewSend);
+        getFriends();
 
+        return mView;
+    }
+
+    public void getFriends(){
+        ParseRelation relation = ParseUser.getCurrentUser().getRelation("friends");
+        ParseQuery<ParseUser> query = relation.getQuery();
+        query.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> list, com.parse.ParseException e) {
+                if (e == null) {
+                    Log.i("Send", "getting friends (finally!) " + list.size());
+                    fillFriends(list);
+                    displayFriends();
+                } else {
+                    Toast.makeText(getActivity(), "No Friends Found", Toast.LENGTH_SHORT);
+                    Log.e("score", "Error: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void fillFriends(List<ParseUser> list){
+        for(ParseObject ob: list){
+            Log.i("Send", "filling friends " + ob.get("username").toString());
+            arrayStrings.add(ob.get("username").toString());
+        }
+        if(arrayStrings == null){
+            arrayStrings.add("No Friends Yet. Add some Friends!");
+        }
+    }
+
+    private void displayFriends(){
+        Log.i("Send", "displaying friends");
+        listView = (ListView) mView.findViewById(R.id.listViewSend);
         mArrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, arrayStrings);
-
         listView.setAdapter(mArrayAdapter);
+        setClickListener();
+    }
 
+    private void setClickListener(){
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), ChoosePicFragment.class);
-                String str = (String) mArrayAdapter.getItem(position);
-                Toast.makeText(getActivity(), "Clicked -" + str, Toast.LENGTH_LONG).show();
-                startActivity(intent);
+//                Intent intent = new Intent(getActivity(), ChoosePicFragment.class);
+//                String str = (String) mArrayAdapter.getItem(position);
+//                Toast.makeText(getActivity(), "Clicked -" + str, Toast.LENGTH_LONG).show();
+//                startActivity(intent);
             }
         });
-
-        return view;
     }
 
     @Override
