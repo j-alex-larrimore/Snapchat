@@ -59,7 +59,6 @@ public class RegisterFragment extends Fragment {
                                     getActivity().finish();
                                 } else {
                                     Log.e("Register", "CreateUserError " + e);
-                                    Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
