@@ -47,12 +47,14 @@ public class InboxFragment extends Fragment {
     private ListView picView;
     private View mView;
     private ParseUser mFriend;
+    private boolean pause = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.inbox, container, false);
 
+        pause = false;
         getFriendRequests();
         getSentPics();
 
@@ -138,16 +140,20 @@ public class InboxFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                makePopup(requestView.getItemAtPosition(position).toString());
-
+                if (pause == false) {
+                    pause = true;
+                    makePopup(requestView.getItemAtPosition(position).toString());
+                }
             }
         });
         picView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                acceptPic(picView.getItemAtPosition(position).toString());
-
+                if (pause == false) {
+                    pause = true;
+                    acceptPic(picView.getItemAtPosition(position).toString());
+                }
             }
         });
     }
@@ -257,5 +263,11 @@ public class InboxFragment extends Fragment {
         });
 
         alert.show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
     }
 }

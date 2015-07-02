@@ -31,17 +31,21 @@ public class LogInFragment extends Fragment {
     private EditText mPasswordField;
     private String mUsername;
     private String mPassword;
+    private boolean pause = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login, container, false);
 
+        pause = false;
+
         mLogInButton = (Button)view.findViewById(R.id.loginButton);
         mLogInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mUsername != null && mPassword != null) {
+                if(mUsername != null && mPassword != null && pause == false) {
+                    pause = true;
                     ParseUser.logInInBackground(mUsername, mPassword, new LogInCallback() {
                         @Override
                         public void done(ParseUser parseUser, ParseException e) {
@@ -98,4 +102,11 @@ public class LogInFragment extends Fragment {
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
+    }
+
 }

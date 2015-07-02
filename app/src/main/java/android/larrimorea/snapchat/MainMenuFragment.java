@@ -25,7 +25,6 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
-
 public class MainMenuFragment extends Fragment{
     private int LOGGED_IN = 0;
     private int LOGGED_OUT = 1;
@@ -36,6 +35,7 @@ public class MainMenuFragment extends Fragment{
     private String[] inArrayStrings;
     private String[] outArrayStrings;
     private ParseUser mFriend;
+    private boolean pause = false;
 
     @Nullable
     @Override
@@ -59,6 +59,12 @@ public class MainMenuFragment extends Fragment{
         setMenu();
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
     }
 
     private void deleteRequest(ParseObject request) {
@@ -86,22 +92,24 @@ public class MainMenuFragment extends Fragment{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (id == 0) {
-                    Intent intent = new Intent(getActivity(), InboxActivity.class);
-                    startActivity(intent);
-                } else if (id == 1) {
-                    Intent intent = new Intent(getActivity(), TakePictureActivity.class);
-                    startActivity(intent);
-                } else if (id == 2) {
-                    Intent intent = new Intent(getActivity(), SendPictureActivity.class);
-                    startActivity(intent);
-                } else if (id == 3) {
-                    Intent intent = new Intent(getActivity(), LogOutActivity.class);
-                    startActivityForResult(intent, LOGGED_OUT);
-                } else {
-                    //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
+                if(pause==false) {
+                    pause = true;
+                    if (id == 0) {
+                        Intent intent = new Intent(getActivity(), InboxActivity.class);
+                        startActivity(intent);
+                    } else if (id == 1) {
+                        Intent intent = new Intent(getActivity(), TakePictureActivity.class);
+                        startActivity(intent);
+                    } else if (id == 2) {
+                        Intent intent = new Intent(getActivity(), SendPictureActivity.class);
+                        startActivity(intent);
+                    } else if (id == 3) {
+                        Intent intent = new Intent(getActivity(), LogOutActivity.class);
+                        startActivityForResult(intent, LOGGED_OUT);
+                    } else {
+                        //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
+                    }
                 }
-
             }
         });
     }
@@ -153,16 +161,18 @@ public class MainMenuFragment extends Fragment{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (id == 0) {
-                    Intent intent = new Intent(getActivity(), RegisterActivity.class);
-                    startActivityForResult(intent, LOGGED_IN);
-                } else if (id == 1) {
-                    Intent intent = new Intent(getActivity(), LogInActivity.class);
-                    startActivityForResult(intent, LOGGED_IN);
-                } else {
-                    //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
+                if (pause == false) {
+                    pause = true;
+                    if (id == 0) {
+                        Intent intent = new Intent(getActivity(), RegisterActivity.class);
+                        startActivityForResult(intent, LOGGED_IN);
+                    } else if (id == 1) {
+                        Intent intent = new Intent(getActivity(), LogInActivity.class);
+                        startActivityForResult(intent, LOGGED_IN);
+                    } else {
+                        //Toast.makeText(this., "Image capture Failed!", Toast.LENGTH_LONG).show();
+                    }
                 }
-
             }
         });
     }

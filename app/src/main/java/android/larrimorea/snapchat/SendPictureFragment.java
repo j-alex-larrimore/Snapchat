@@ -1,42 +1,42 @@
 package android.larrimorea.snapchat;
 
-import android.app.Activity;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Toast;
+        import android.app.Activity;
+        import android.content.DialogInterface;
+        import android.content.Intent;
+        import android.content.IntentFilter;
+        import android.net.Uri;
+        import android.os.Bundle;
+        import android.os.Handler;
+        import android.os.Message;
+        import android.support.annotation.Nullable;
+        import android.support.v4.app.Fragment;
+        import android.support.v7.app.AlertDialog;
+        import android.text.Editable;
+        import android.text.TextWatcher;
+        import android.util.Log;
+        import android.view.LayoutInflater;
+        import android.view.Menu;
+        import android.view.MenuInflater;
+        import android.view.MenuItem;
+        import android.view.View;
+        import android.view.ViewGroup;
+        import android.widget.AdapterView;
+        import android.widget.ArrayAdapter;
+        import android.widget.EditText;
+        import android.widget.ListView;
+        import android.widget.Toast;
 
-import com.parse.FindCallback;
-import com.parse.GetCallback;
-import com.parse.Parse;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.ParseRelation;
-import com.parse.ParseUser;
+        import com.parse.FindCallback;
+        import com.parse.GetCallback;
+        import com.parse.Parse;
+        import com.parse.ParseObject;
+        import com.parse.ParseQuery;
+        import com.parse.ParseRelation;
+        import com.parse.ParseUser;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+        import java.text.ParseException;
+        import java.util.ArrayList;
+        import java.util.List;
 
 
 public class SendPictureFragment extends Fragment {
@@ -46,11 +46,14 @@ public class SendPictureFragment extends Fragment {
     private static Uri selectedPic = null;
     private String mFriendReqName;
     private View mView;
+    private boolean pause = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.send_image, container, false);
+
+        pause = false;
 
         getFriends();
 
@@ -94,10 +97,13 @@ public class SendPictureFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), ChoosePicActivity.class);
-                String str = (String) mArrayAdapter.getItem(position);
-                intent.putExtra("to", str);
-                startActivity(intent);
+                if (pause == false) {
+                    pause = true;
+                    Intent intent = new Intent(getActivity(), ChoosePicActivity.class);
+                    String str = (String) mArrayAdapter.getItem(position);
+                    intent.putExtra("to", str);
+                    startActivity(intent);
+                }
             }
         });
     }
@@ -206,5 +212,11 @@ public class SendPictureFragment extends Fragment {
 
 
         Log.i("SendPicture", "Sending Friend Request to " + user.getUsername());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
     }
 }

@@ -48,11 +48,14 @@ public class TakePictureFragment extends Fragment {
     //private Uri fileURI;
     String mCurrentPhotoPath;
     String imageFileName;
+    private boolean pause = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.take_picture, container, false);
+
+        pause = false;
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(intent.resolveActivity(getActivity().getPackageManager()) != null) {
@@ -75,10 +78,12 @@ public class TakePictureFragment extends Fragment {
     @Override
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE){
-            if(resultCode == getActivity().RESULT_OK){
+            if(resultCode == getActivity().RESULT_OK && pause == false){
+                pause = true;
                 galleryAddPic();
                 parseAddPic();
                 Toast.makeText(getActivity(), "Image Saved!", Toast.LENGTH_LONG).show();
+                getActivity().finish();
             }else if(resultCode == getActivity().RESULT_CANCELED){
                 Toast.makeText(getActivity(), "Image capture Canceled!", Toast.LENGTH_LONG).show();
             }else{
@@ -127,10 +132,10 @@ public class TakePictureFragment extends Fragment {
         photoFile.saveInBackground(new SaveCallback() {
             @Override
             public void done(com.parse.ParseException e) {
-                if(e==null) {
+                if (e == null) {
                     ParseUser.getCurrentUser().add("photos", photoFile);
                     ParseUser.getCurrentUser().saveInBackground();
-                }else{
+                } else {
                     Log.e("TakePictureFragment", "ParseAddPic" + e);
                 }
             }
@@ -141,5 +146,9 @@ public class TakePictureFragment extends Fragment {
 
     }
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
+    }
 }

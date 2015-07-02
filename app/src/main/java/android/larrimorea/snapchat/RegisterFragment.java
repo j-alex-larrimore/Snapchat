@@ -35,18 +35,21 @@ public class RegisterFragment extends Fragment {
     private String mUsername;
     private String mPassword;
     private ParseUser user;
-
+    private boolean pause = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.register_fragment, container, false);
 
+        pause = false;
+
         mRegisterButton = (Button)view.findViewById(R.id.registerButton);
         mRegisterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mUsername != null && mPassword != null) {
+                if(mUsername != null && mPassword != null && pause == false) {
+                    pause = true;
                     user = new ParseUser();
                     user.setUsername(mUsername);
                     user.setPassword(mPassword);
@@ -108,7 +111,9 @@ public class RegisterFragment extends Fragment {
         return view;
     }
 
-    public ParseUser getCurrentUser(){
-        return user;
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
     }
 }

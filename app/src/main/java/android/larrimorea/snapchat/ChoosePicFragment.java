@@ -39,11 +39,14 @@ public class ChoosePicFragment extends Fragment {
     protected ListView listView;
     private String sendTo;
     private ArrayList<Bitmap> takenPhotos;
+    private boolean pause = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_pic, container, false);
+
+        pause = false;
 
        sendTo = getActivity().getIntent().getStringExtra("to");
         getPhotos();
@@ -62,7 +65,7 @@ public class ChoosePicFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == READ_REQUEST_CODE){
-            if(resultCode == getActivity().RESULT_OK){
+            if(resultCode == getActivity().RESULT_OK && pause == false){
                 Uri uri = null;
                 Bitmap bitmap = null;
                 if(data != null) {
@@ -85,6 +88,9 @@ public class ChoosePicFragment extends Fragment {
                     sentPic.put("Picture", photoFile);
                     sentPic.put("From", ParseUser.getCurrentUser().getUsername());
                     sentPic.put("To", sendTo);
+
+                    pause = true;
+
                     sentPic.saveInBackground(new SaveCallback() {
 
                         @Override
@@ -126,5 +132,11 @@ public class ChoosePicFragment extends Fragment {
 
     public static ArrayList<Image> getPics(){
         return arrayImages;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pause = false;
     }
 }
