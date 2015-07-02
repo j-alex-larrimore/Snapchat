@@ -61,6 +61,7 @@ public class RegisterFragment extends Fragment {
                                     getActivity().setResult(getActivity().RESULT_OK, returnIntent);
                                     getActivity().finish();
                                 } else {
+                                    pause = false;
                                     Log.e("Register", "CreateUserError " + e);
                                 }
                             }

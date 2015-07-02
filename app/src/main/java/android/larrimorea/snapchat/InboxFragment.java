@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.internal.widget.AdapterViewCompat;
 import android.text.Editable;
@@ -55,6 +56,11 @@ public class InboxFragment extends Fragment {
         mView = inflater.inflate(R.layout.inbox, container, false);
 
         pause = false;
+
+        //occasional nullPointerExceptions without the following two calls
+        displayFriendRequests();
+        displayPics();
+
         getFriendRequests();
         getSentPics();
 
@@ -239,6 +245,7 @@ public class InboxFragment extends Fragment {
     private void viewPic(ParseFile pic){
         if(pic != null){
             makePicPopup(pic);
+
         }
     }
 
@@ -259,6 +266,7 @@ public class InboxFragment extends Fragment {
         alert.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 dialog.cancel();
+                getActivity().finish();
             }
         });
 

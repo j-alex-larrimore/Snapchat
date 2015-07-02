@@ -54,6 +54,7 @@ public class LogInFragment extends Fragment {
                                 getActivity().setResult(getActivity().RESULT_OK, returnIntent);
                                 getActivity().finish();
                             } else {
+                                pause = false;
                                 Log.e("Login", "Log In Error " + e);
                                 Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
                             }
