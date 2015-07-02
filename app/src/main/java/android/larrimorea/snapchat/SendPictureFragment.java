@@ -64,7 +64,6 @@ public class SendPictureFragment extends Fragment {
             @Override
             public void done(List<ParseUser> list, com.parse.ParseException e) {
                 if (e == null) {
-                    Log.i("Send", "getting friends (finally!) " + list.size());
                     fillFriends(list);
                     displayFriends();
                 } else {
@@ -77,7 +76,6 @@ public class SendPictureFragment extends Fragment {
 
     private void fillFriends(List<ParseUser> list){
         for(ParseObject ob: list){
-            Log.i("Send", "filling friends " + ob.get("username").toString());
             arrayStrings.add(ob.get("username").toString());
         }
         if(arrayStrings == null){
@@ -86,7 +84,6 @@ public class SendPictureFragment extends Fragment {
     }
 
     private void displayFriends(){
-        Log.i("Send", "displaying friends");
         listView = (ListView) mView.findViewById(R.id.listViewSend);
         mArrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, arrayStrings);
         listView.setAdapter(mArrayAdapter);
@@ -97,10 +94,10 @@ public class SendPictureFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(getActivity(), ChoosePicFragment.class);
-//                String str = (String) mArrayAdapter.getItem(position);
-//                Toast.makeText(getActivity(), "Clicked -" + str, Toast.LENGTH_LONG).show();
-//                startActivity(intent);
+                Intent intent = new Intent(getActivity(), ChoosePicActivity.class);
+                String str = (String) mArrayAdapter.getItem(position);
+                intent.putExtra("to", str);
+                startActivity(intent);
             }
         });
     }
