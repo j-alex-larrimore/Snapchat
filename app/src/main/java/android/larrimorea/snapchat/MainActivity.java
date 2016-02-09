@@ -34,7 +34,10 @@ public class MainActivity extends SingleFragmentActivity {
 
         //ParseObject.registerSubclass(User.class);
 
-        Parse.initialize(this, "qh36Gr8U0NeaEEk8V7WyuOOvB6H6JnRsk56fsddW", "t1GXIOyuHB2yYaQMxVwPnEaPCCmEnmGEcDIp9QQc");
+        Parse.initialize(new Parse.Configuration.Builder(this)
+                .applicationId("myAppId")
+                .server("http://salty-waters-64499.herokuapp.com/parse/")
+                .build());
     }
 
 
