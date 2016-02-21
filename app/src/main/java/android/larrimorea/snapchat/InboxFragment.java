@@ -31,6 +31,8 @@ import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.files.BackendlessFile;
+import com.backendless.persistence.BackendlessDataQuery;
+import com.backendless.persistence.QueryOptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +40,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -140,35 +143,43 @@ public class InboxFragment extends Fragment {
             }
         };
 
-        Backendless.Data.of( BackendlessUser.class ).find(new AsyncCallback<BackendlessCollection<BackendlessUser>>() {
+        final AsyncCallback<BackendlessCollection<BackendlessUser>> responder = new AsyncCallback<BackendlessCollection<BackendlessUser>>()
+        {
             @Override
-            public void handleResponse(BackendlessCollection<BackendlessUser> users) {
-                Iterator<BackendlessUser> userIterator = users.getCurrentPage().iterator();
+            public void handleResponse(BackendlessCollection<BackendlessUser> backendlessUserBackendlessCollection) {
+                Iterator<BackendlessUser> userIterator = backendlessUserBackendlessCollection.getCurrentPage().iterator();
 
-                while (userIterator.hasNext()) {
+                while( userIterator.hasNext() ){
+
                     BackendlessUser user = userIterator.next();
 
-                    if (from.equals(user.getProperty("name").toString())) {
+                    if(from.equals(user.getProperty("name").toString())) {
                         mFriend = user;
                     }
                 }
-                Log.i("addFriend", "Friendfound");
                 BackendlessUser[] friends = (BackendlessUser[])Backendless.UserService.CurrentUser().getProperty("friends");
                 BackendlessUser[] newFriends = new BackendlessUser[friends.length + 1];
-                newFriends = friends.clone();
+                for(int i = 0; i< friends.length; i++){
+                    newFriends[i] = friends[i];
+                }
                 newFriends[friends.length] = mFriend;
-                //friends[0] = mFriend;
                 Backendless.UserService.CurrentUser().setProperty("friends", newFriends);
                 Backendless.Data.of( BackendlessUser.class ).save(Backendless.UserService.CurrentUser(), callback);
-
             }
 
             @Override
-            public void handleFault(BackendlessFault backendlessFault) {
-                System.out.println("Server reported an error - " + backendlessFault.getMessage());
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+                Log.e("GetFRIENDs", "ERROR");
             }
-        });
-        //return mFriend;
+        };
+
+
+        BackendlessDataQuery query = new BackendlessDataQuery();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.addRelated("friends");
+        query.setQueryOptions(queryOptions);
+        Backendless.Data.of( BackendlessUser.class ).find(query, responder);
     }
 
 
