@@ -2,6 +2,7 @@ package android.larrimorea.snapchat;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,15 +16,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.parse.FindCallback;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.ParseRelation;
-import com.parse.ParseUser;
+import com.backendless.Backendless;
+import com.backendless.BackendlessCollection;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class MainMenuFragment extends Fragment{
     private int LOGGED_IN = 0;
@@ -34,8 +36,9 @@ public class MainMenuFragment extends Fragment{
     private ArrayAdapter<String> mAdapter;
     private String[] inArrayStrings;
     private String[] outArrayStrings;
-    private ParseUser mFriend;
+    private BackendlessUser mFriend;
     private boolean pause = false;
+    private boolean friendFound = false;
 
     @Nullable
     @Override
@@ -67,12 +70,46 @@ public class MainMenuFragment extends Fragment{
         pause = false;
     }
 
-    private void deleteRequest(ParseObject request) {
-        try {
-            request.delete();
-        }catch(ParseException e){
-            Log.e("Main", "DeleteRequest error " + e);
-        }
+    private void deleteRequests() {
+        final AsyncCallback<Long> deleteResponder = new AsyncCallback<Long>()
+        {
+            @Override
+            public void handleResponse( Long timestamp )
+            {
+            }
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+
+            }
+        };
+
+        AsyncCallback<BackendlessCollection<FriendRequests>> callback=new AsyncCallback<BackendlessCollection<FriendRequests>>()
+        {
+            @Override
+            public void handleResponse( BackendlessCollection<FriendRequests> reqs )
+            {
+                Iterator<FriendRequests> iterator=reqs.getCurrentPage().iterator();
+
+                while( iterator.hasNext() )
+                {
+                    FriendRequests requests =iterator.next();
+                    if(requests.getTo().equals(Backendless.UserService.CurrentUser().getProperty("name").toString()) && requests.isAccepted() == true) {
+                        Backendless.Data.of(FriendRequests.class).remove(requests, deleteResponder);
+                    }
+                }
+            }
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+
+            }
+        };
+
+        Backendless.Data.of( FriendRequests.class ).find(callback);
+
     }
 
     public void setMenu(){
@@ -84,7 +121,11 @@ public class MainMenuFragment extends Fragment{
     }
 
     public void loggedIn(){
-        updateFriends();
+        try {
+            updateFriends();
+        }catch(InterruptedException e){
+            Log.e("LoggedIn error", "Error: " + e);
+        }
 
         mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, inArrayStrings);
         listView.setAdapter(mAdapter);
@@ -92,7 +133,7 @@ public class MainMenuFragment extends Fragment{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(pause==false) {
+                if (pause == false) {
                     pause = true;
                     if (id == 0) {
                         Intent intent = new Intent(getActivity(), InboxActivity.class);
@@ -114,44 +155,74 @@ public class MainMenuFragment extends Fragment{
         });
     }
 
-    private void updateFriends(){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequests");
-        query.whereEqualTo("From", ParseUser.getCurrentUser().getUsername());
-        query.whereEqualTo("Accepted", true);
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> list, com.parse.ParseException e) {
-                if (e == null) {
-                    for (ParseObject ob : list) {
-                        updateFriendList(ob);
-                        deleteRequest(ob);
-                    }
-                } else {
-                    Toast.makeText(getActivity(), "No Friend Requests Accepted", Toast.LENGTH_SHORT);
-                    Log.e("score", "Error: " + e.getMessage());
-                }
-            }
-        });
+   private void updateFriends() throws InterruptedException{
+       friendFound = false;
+           AsyncCallback<BackendlessCollection<FriendRequests>> callback=new AsyncCallback<BackendlessCollection<FriendRequests>>()
+           {
+               @Override
+               public void handleResponse( BackendlessCollection<FriendRequests> reqs )
+               {
+                   Iterator<FriendRequests> iterator=reqs.getCurrentPage().iterator();
+                    Log.i("updateFriends", "handling response");
+                   while( iterator.hasNext() )
+                   {
+                       BackendlessUser curUser = Backendless.UserService.CurrentUser();
+                       FriendRequests requests =iterator.next();
+                       if(requests.getFrom().equals(curUser.getProperty("name").toString()) && requests.isAccepted() == true){
+                           System.out.println("Found accepted request!");
+                           ArrayList<BackendlessUser> friends = new ArrayList<BackendlessUser>();
+                           BackendlessUser newFriend = findFriend(requests.getTo().toString());
+                           friends.add(newFriend);
+                           Log.i("updateFriends", "saving friend");
+                           curUser.setProperty("friends", friends);
+                           Backendless.Data.of( BackendlessUser.class ).save(curUser);
+                           friendFound = true;
+                       }
+                   }
+                   if(friendFound) {
+                       Log.i("updateFriends", "deleting request");
+                       deleteRequests();
+                   }
+
+               }
+
+               @Override
+               public void handleFault( BackendlessFault backendlessFault )
+               {
+
+               }
+           };
+
+           Backendless.Data.of( FriendRequests.class ).find(callback);
     }
 
-    private void updateFriendList(ParseObject request){
+    public BackendlessUser findFriend(final String to){
         mFriend = null;
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereEqualTo("username", request.getString("To"));
-        query.getFirstInBackground(new GetCallback<ParseUser>() {
+        Backendless.Data.of( BackendlessUser.class ).find( new AsyncCallback<BackendlessCollection<BackendlessUser>>()
+        {
             @Override
-            public void done(ParseUser parseUser, com.parse.ParseException e) {
-                if (e == null) {
-                    mFriend = parseUser;
-                    ParseRelation<ParseUser> relation = ParseUser.getCurrentUser().getRelation("friends");
-                    relation.add(mFriend);
-                    ParseUser.getCurrentUser().saveInBackground();
-                } else {
-                    Log.e("inbox", "getFriendError: " + e.getMessage());
+            public void handleResponse( BackendlessCollection<BackendlessUser> users )
+            {
+                Iterator<BackendlessUser> userIterator = users.getCurrentPage().iterator();
 
+                while( userIterator.hasNext() )
+                {
+                    BackendlessUser user = userIterator.next();
+
+                    if(to.equals(user.getProperty("name").toString())){
+                        mFriend = user;
+                    }
                 }
             }
-        });
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+                System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+            }
+        } );
+
+        return mFriend;
     }
 
     public void loggedOut(){
@@ -179,14 +250,32 @@ public class MainMenuFragment extends Fragment{
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("activity result", "Code: " + resultCode);
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == getActivity().RESULT_OK){
             if(requestCode == LOGGED_IN){
                 loggedIn = true;
-                Log.i("MM", "user: " + ParseUser.getCurrentUser().getUsername());
+                BackendlessUser currentUser = Backendless.UserService.CurrentUser();
+                Log.i("MM", "user: " + currentUser.getProperty("name"));
                 setMenu();
             }else if(requestCode == LOGGED_OUT){
-                ParseUser.getCurrentUser().logOut();
+                final AsyncCallback<Void> logoutResponder = new AsyncCallback<Void>()
+                {
+                    @Override
+                    public void handleResponse( Void aVoid )
+                    {
+                        boolean isValidLogin = Backendless.UserService.isValidLogin();
+                        System.out.println( "Is user logged in? - " + isValidLogin );
+                    }
+
+                    @Override
+                    public void handleFault( BackendlessFault backendlessFault )
+                    {
+                        System.out.println( "Server reported an error " + backendlessFault.getMessage() );
+                    }
+                };
+
+                Backendless.UserService.logout(logoutResponder);
                 loggedIn = false;
                 setMenu();
                 Log.i("MM", "LOGGED OUT");
@@ -196,14 +285,4 @@ public class MainMenuFragment extends Fragment{
         }
 
     }
-
-    public boolean isLoggedIn() {
-        return loggedIn;
-    }
-
-    public void setLoggedIn(boolean loggedIn) {
-        this.loggedIn = loggedIn;
-    }
-
-
 }

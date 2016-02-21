@@ -16,11 +16,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.parse.Parse;
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseUser;
-import com.parse.SignUpCallback;
+
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.async.callback.BackendlessCallback;
+import com.backendless.exceptions.BackendlessFault;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class RegisterFragment extends Fragment {
     private EditText mPasswordField;
     private String mUsername;
     private String mPassword;
-    private ParseUser user;
+    private BackendlessUser user;
     private boolean pause = false;
 
     @Nullable
@@ -50,24 +51,46 @@ public class RegisterFragment extends Fragment {
             public void onClick(View v) {
                 if(mUsername != null && mPassword != null && pause == false) {
                     pause = true;
-                    user = new ParseUser();
-                    user.setUsername(mUsername);
-                    user.setPassword(mPassword);
-                        user.signUpInBackground(new SignUpCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if (e == null) {
+                    AsyncCallback<BackendlessUser> callback = new AsyncCallback<BackendlessUser>()
+                    {
+                        @Override
+                        public void handleResponse( BackendlessUser registeredUser )
+                        {
+                            System.out.println( "User has been registered - " + registeredUser.getObjectId() );
+                            AsyncCallback<BackendlessUser> callback = new AsyncCallback<BackendlessUser>()
+                            {
+                                @Override
+                                public void handleResponse( BackendlessUser loggedInUser )
+                                {
+                                    System.out.println( "User has been registered & logged in - " + loggedInUser.getObjectId() );
+                                    Log.i("Login", "Info: " + Backendless.UserService.CurrentUser().getProperty("name"));
                                     Intent returnIntent = new Intent();
                                     getActivity().setResult(getActivity().RESULT_OK, returnIntent);
                                     getActivity().finish();
-                                } else {
-                                    pause = false;
-                                    Log.e("Register", "CreateUserError " + e);
                                 }
-                            }
-                        });
 
+                                @Override
+                                public void handleFault( BackendlessFault backendlessFault )
+                                {
+                                    System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+                                }
+                            };
 
+                            Backendless.UserService.login( mUsername, mPassword, callback );
+                        }
+
+                        @Override
+                        public void handleFault( BackendlessFault backendlessFault )
+                        {
+                            System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+                        }
+                    };
+
+                    user = new BackendlessUser();
+                    user.setPassword(mUsername);
+                    user.setProperty("name", mPassword);
+
+                    Backendless.UserService.register(user, callback);
                 }
             }
         });

@@ -15,11 +15,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.parse.LogInCallback;
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseUser;
-import com.parse.SignUpCallback;
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 
 /**
  * Created by Alex on 6/29/2015.
@@ -46,20 +45,29 @@ public class LogInFragment extends Fragment {
             public void onClick(View v) {
                 if(mUsername != null && mPassword != null && pause == false) {
                     pause = true;
-                    ParseUser.logInInBackground(mUsername, mPassword, new LogInCallback() {
+                    AsyncCallback<BackendlessUser> callback = new AsyncCallback<BackendlessUser>()
+                    {
                         @Override
-                        public void done(ParseUser parseUser, ParseException e) {
-                            if (e == null) {
-                                Intent returnIntent = new Intent();
-                                getActivity().setResult(getActivity().RESULT_OK, returnIntent);
-                                getActivity().finish();
-                            } else {
-                                pause = false;
-                                Log.e("Login", "Log In Error " + e);
-                                Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
-                            }
+                        public void handleResponse( BackendlessUser loggedInUser )
+                        {
+                            System.out.println( "User has been logged in - " + loggedInUser.getObjectId() );
+                            Log.i("Login", "Info: " + Backendless.UserService.CurrentUser().getProperty("name"));
+                            Intent returnIntent = new Intent();
+                            getActivity().setResult(getActivity().RESULT_OK, returnIntent);
+                            getActivity().finish();
                         }
-                    });
+
+                        @Override
+                        public void handleFault( BackendlessFault backendlessFault )
+                        {
+                            System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+                        }
+                    };
+
+                    Backendless.UserService.login( mUsername, mPassword, callback );
+
+
+
                 }
             }
         });

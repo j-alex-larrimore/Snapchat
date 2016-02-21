@@ -18,21 +18,23 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.parse.Parse;
-import com.parse.ParseFile;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
+import com.backendless.Backendless;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.backendless.files.BackendlessFile;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-/**
- * Created by Alex on 6/11/2015.
- */
 public class ChoosePicFragment extends Fragment {
     private static final int READ_REQUEST_CODE = 42;
     private static ArrayList<Image> arrayImages = new ArrayList<Image>();
@@ -48,7 +50,7 @@ public class ChoosePicFragment extends Fragment {
 
         pause = false;
 
-       sendTo = getActivity().getIntent().getStringExtra("to");
+        sendTo = getActivity().getIntent().getStringExtra("to");
         getPhotos();
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -66,6 +68,7 @@ public class ChoosePicFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == READ_REQUEST_CODE){
             if(resultCode == getActivity().RESULT_OK && pause == false){
+
                 Uri uri = null;
                 Bitmap bitmap = null;
                 if(data != null) {
@@ -76,34 +79,42 @@ public class ChoosePicFragment extends Fragment {
                     } catch (Exception e) {
                         Log.e("Error", "activityresult " + e);
                     }
-                    byte[] scaledData;
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-
-                    scaledData = stream.toByteArray();
                     String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                    String imageFileName = "JPEG_" + timestamp + "_.jpg";
-                    ParseFile photoFile = new ParseFile(imageFileName, scaledData);
-                    ParseObject sentPic = new ParseObject("SentPicture");
-                    sentPic.put("Picture", photoFile);
-                    sentPic.put("From", ParseUser.getCurrentUser().getUsername());
-                    sentPic.put("To", sendTo);
+                    final String imageFileName = "JPEG_" + timestamp + "_.jpg";
 
-                    pause = true;
+                    //This ends the activity early and the file upload occurs in the background
+                    getActivity().finish();
 
-                    sentPic.saveInBackground(new SaveCallback() {
+                    Backendless.Files.Android.upload( bitmap, Bitmap.CompressFormat.PNG, 100, imageFileName, "mypics", new AsyncCallback<BackendlessFile>()
+                            {
+                                @Override
+                                public void handleResponse( final BackendlessFile backendlessFile )
+                                {
+                                    String from = Backendless.UserService.CurrentUser().getProperty("name").toString();
+                                    SentPicture sentPic = new SentPicture();
+                                    sentPic.setFrom(from);
+                                    sentPic.setTo(sendTo);
+                                    sentPic.setPicLocation(imageFileName);
+                                    Backendless.Persistence.save(sentPic, new AsyncCallback<SentPicture>() {
+                                        public void handleResponse(SentPicture sent) {
+                                            //Toast.makeText(getActivity(), "Pic Sent!", Toast.LENGTH_SHORT).show();
+                                        }
 
-                        @Override
-                        public void done(com.parse.ParseException e) {
-                            if (e == null) {
-                                makePopup();
-                                getActivity().finish();
-                            } else {
-                                Log.e("ChoosePic", "SendPic" + e);
-                            }
-                        }
+                                        public void handleFault(BackendlessFault fault) {
+                                            // an error has occurred, the error code can be retrieved with fault.getCode()
+                                        }
+                                    });
+                                    pause = true;
 
-                    });
+                                }
+
+                                @Override
+                                public void handleFault( BackendlessFault backendlessFault )
+                                {
+                                    Toast.makeText( getActivity(), backendlessFault.toString(), Toast.LENGTH_SHORT ).show();
+                                }
+                            });
+
 
                 }
             }else if(resultCode == getActivity().RESULT_CANCELED) {
@@ -134,6 +145,7 @@ public class ChoosePicFragment extends Fragment {
     public static ArrayList<Image> getPics(){
         return arrayImages;
     }
+
 
     @Override
     public void onResume() {

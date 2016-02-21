@@ -26,17 +26,20 @@ package android.larrimorea.snapchat;
         import android.widget.ListView;
         import android.widget.Toast;
 
-        import com.parse.FindCallback;
-        import com.parse.GetCallback;
-        import com.parse.Parse;
-        import com.parse.ParseObject;
-        import com.parse.ParseQuery;
-        import com.parse.ParseRelation;
-        import com.parse.ParseUser;
+        import com.backendless.Backendless;
+        import com.backendless.BackendlessCollection;
+        import com.backendless.BackendlessUser;
+        import com.backendless.async.callback.AsyncCallback;
+        import com.backendless.exceptions.BackendlessFault;
+        import com.backendless.persistence.BackendlessDataQuery;
+        import com.backendless.persistence.QueryOptions;
 
-        import java.text.ParseException;
+        import java.lang.reflect.Array;
         import java.util.ArrayList;
+        import java.util.Iterator;
         import java.util.List;
+
+        import weborb.client.Responder;
 
 
 public class SendPictureFragment extends Fragment {
@@ -47,6 +50,8 @@ public class SendPictureFragment extends Fragment {
     private String mFriendReqName;
     private View mView;
     private boolean pause = false;
+
+    private List<BackendlessUser> friendsList = new ArrayList<BackendlessUser>();
 
     @Nullable
     @Override
@@ -61,25 +66,51 @@ public class SendPictureFragment extends Fragment {
     }
 
     public void getFriends(){
-        ParseRelation relation = ParseUser.getCurrentUser().getRelation("friends");
-        ParseQuery<ParseUser> query = relation.getQuery();
-        query.findInBackground(new FindCallback<ParseUser>() {
+
+        final AsyncCallback<BackendlessCollection<BackendlessUser>> responder = new AsyncCallback<BackendlessCollection<BackendlessUser>>()
+        {
             @Override
-            public void done(List<ParseUser> list, com.parse.ParseException e) {
-                if (e == null) {
-                    fillFriends(list);
-                    displayFriends();
-                } else {
-                    Toast.makeText(getActivity(), "No Friends Found", Toast.LENGTH_SHORT);
-                    Log.e("score", "Error: " + e.getMessage());
+            public void handleResponse(BackendlessCollection<BackendlessUser> backendlessUserBackendlessCollection) {
+                Iterator<BackendlessUser> userIterator = backendlessUserBackendlessCollection.getCurrentPage().iterator();
+
+                while( userIterator.hasNext() ){
+
+                    BackendlessUser user = userIterator.next();
+
+                    if(user.getProperty("name").toString().equals(Backendless.UserService.CurrentUser().getProperty("name").toString())){
+                        Log.i("User found", user.getProperty("name").toString());
+                        BackendlessUser[] friends = (BackendlessUser[])user.getProperty("friends");
+                        for(BackendlessUser friend: friends){
+                            Log.i("Responder2b", friend.getProperty("name").toString());
+                            friendsList.add(friend);
+                        }
+                        fillFriends(friendsList);
+                        displayFriends();
+                    }
+
                 }
             }
-        });
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+                Log.e("GetFRIENDs", "ERROR");
+            }
+        };
+
+
+        BackendlessDataQuery query = new BackendlessDataQuery();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.addRelated("friends");
+        query.setQueryOptions(queryOptions);
+        Backendless.Data.of( BackendlessUser.class ).find(query, responder);
+
+
     }
 
-    private void fillFriends(List<ParseUser> list){
-        for(ParseObject ob: list){
-            arrayStrings.add(ob.get("username").toString());
+    private void fillFriends(List<BackendlessUser> list){
+        for(BackendlessUser ob: list){
+            arrayStrings.add(ob.getProperty("name").toString());
         }
         if(arrayStrings == null){
             arrayStrings.add("No Friends Yet. Add some Friends!");
@@ -188,30 +219,46 @@ public class SendPictureFragment extends Fragment {
     }
 
     public void searchForFriend(){
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereEqualTo("username", mFriendReqName);
-        query.getFirstInBackground(new GetCallback<ParseUser>() {
+        Backendless.Data.of( BackendlessUser.class ).find( new AsyncCallback<BackendlessCollection<BackendlessUser>>()
+        {
             @Override
-            public void done(ParseUser user, com.parse.ParseException e) {
+            public void handleResponse( BackendlessCollection<BackendlessUser> users )
+            {
+                Iterator<BackendlessUser> userIterator = users.getCurrentPage().iterator();
 
-                if (e == null) {
-                    sendFriendRequest(user);
-                } else {
-                    Toast.makeText(getActivity(), "Friend not found!", Toast.LENGTH_SHORT).show();
-                    Log.e("SendPictureFragment", "AddFriend " + e);
+                while( userIterator.hasNext() )
+                {
+                    BackendlessUser user = userIterator.next();
+
+                   if(mFriendReqName.equals(user.getProperty("name").toString())){
+                       sendFriendRequest(user);
+                   }
                 }
             }
-        });
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+                System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+            }
+        } );
     }
 
-    public void sendFriendRequest(ParseUser user){
-        ParseObject fr = new ParseObject("FriendRequests");
-        fr.put("From", ParseUser.getCurrentUser().getUsername());
-        fr.put("To", user.getUsername());
-        fr.saveInBackground();
+    public void sendFriendRequest(BackendlessUser user){
+        String from = Backendless.UserService.CurrentUser().getProperty("name").toString();
+        FriendRequests friendReq = new FriendRequests();
+        friendReq.setFrom(from);
+        friendReq.setTo(user.getProperty("name").toString());
+        Backendless.Persistence.save(friendReq, new AsyncCallback<FriendRequests>() {
+            public void handleResponse(FriendRequests req) {
+                Toast.makeText(getActivity(), "Friend Requested!", Toast.LENGTH_SHORT).show();
+            }
 
+            public void handleFault(BackendlessFault fault) {
+                // an error has occurred, the error code can be retrieved with fault.getCode()
+            }
+        });
 
-        Log.i("SendPicture", "Sending Friend Request to " + user.getUsername());
     }
 
     @Override

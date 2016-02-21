@@ -2,6 +2,10 @@ package android.larrimorea.snapchat;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,19 +25,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.parse.FindCallback;
-import com.parse.GetCallback;
-import com.parse.GetDataCallback;
-import com.parse.ParseFile;
-import com.parse.ParseImageView;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.ParseRelation;
-import com.parse.ParseUser;
+import com.backendless.Backendless;
+import com.backendless.BackendlessCollection;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.backendless.files.BackendlessFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Alex on 6/9/2015.
@@ -42,13 +49,16 @@ public class InboxFragment extends Fragment {
 
     private ArrayList<String> frArrayStrings = new ArrayList<String>();
     private ArrayList<String> picArrayStrings = new ArrayList<String>();
+    private ArrayList<FriendRequests> friendRequests = new ArrayList<FriendRequests>();
+    private ArrayList<SentPicture> receivedPictures = new ArrayList<SentPicture>();
     private ArrayAdapter mAdapter;
     private ArrayAdapter mPicAdapter;
     private ListView requestView;
     private ListView picView;
     private View mView;
-    private ParseUser mFriend;
+    private BackendlessUser mFriend;
     private boolean pause = false;
+    private Bitmap picDownload;
 
     @Nullable
     @Override
@@ -68,26 +78,37 @@ public class InboxFragment extends Fragment {
     }
 
     private void getFriendRequests(){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequests");
-        query.whereEqualTo("To", ParseUser.getCurrentUser().getUsername());
-        query.whereNotEqualTo("Accepted", true);
-        query.findInBackground(new FindCallback<ParseObject>() {
+        AsyncCallback<BackendlessCollection<FriendRequests>> callback=new AsyncCallback<BackendlessCollection<FriendRequests>>()
+        {
             @Override
-            public void done(List<ParseObject> list, com.parse.ParseException e) {
-                if (e == null) {
-                    fillFriendRequests(list);
-                    displayFriendRequests();
-                } else {
-                    Toast.makeText(getActivity(), "No Friend Requests Found", Toast.LENGTH_SHORT);
-                    Log.e("Inbox", "getFriendReqError: " + e.getMessage());
+            public void handleResponse( BackendlessCollection<FriendRequests> reqs )
+            {
+                Iterator<FriendRequests> iterator=reqs.getCurrentPage().iterator();
+
+                while( iterator.hasNext() )
+                {
+                    FriendRequests requests =iterator.next();
+                    if(requests.getTo().equals(Backendless.UserService.CurrentUser().getProperty("name").toString()) && requests.isAccepted() == false) {
+                       friendRequests.add(requests);
+                    }
                 }
+                fillFriendRequests();
+                displayFriendRequests();
             }
-        });
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+
+            }
+        };
+
+        Backendless.Data.of( FriendRequests.class ).find(callback);
     }
 
-    private void fillFriendRequests(List<ParseObject> list){
-        for(ParseObject ob: list){
-            frArrayStrings.add(ob.get("From").toString());
+    private void fillFriendRequests(){
+        for(FriendRequests fr: friendRequests){
+            frArrayStrings.add(fr.getFrom());
         }
         if(frArrayStrings == null){
             frArrayStrings.add("No Pending Friend Requests");
@@ -98,48 +119,58 @@ public class InboxFragment extends Fragment {
         requestView = (ListView) mView.findViewById(R.id.listViewFriendReqs);
         mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, frArrayStrings);
         requestView.setAdapter(mAdapter);
-
     }
 
-
-    private void acceptRequest(final String from){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequests");
-        query.whereEqualTo("To", ParseUser.getCurrentUser().getUsername());
-        query.whereEqualTo("From", from);
-        query.getFirstInBackground(new GetCallback<ParseObject>() {
-            @Override
-            public void done(ParseObject parseObject, com.parse.ParseException e) {
-                if (e == null) {
-                    parseObject.put("Accepted", true);
-                    parseObject.saveInBackground();
-                    ParseRelation<ParseUser> relation = ParseUser.getCurrentUser().getRelation("friends");
-                    addFriend(from, relation);
-                } else {
-                    Log.e("Inbox", "acceptRequestError: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    private void addFriend(final String from, final ParseRelation relation){
-        Log.i("Inbox", "Adding Friend");
+    public void addFriend(final String from){
+        Log.i("Adding friend", from);
         mFriend = null;
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereEqualTo("username", from);
-        query.getFirstInBackground(new GetCallback<ParseUser>() {
-            @Override
-            public void done(ParseUser parseUser, com.parse.ParseException e) {
-                if (e == null) {
-                    mFriend = parseUser;
-                    relation.add(mFriend);
-                    ParseUser.getCurrentUser().saveInBackground();
-                } else {
-                    Log.e("inbox", "getFriendError: " + e.getMessage());
 
+        final AsyncCallback<BackendlessUser> callback = new AsyncCallback<BackendlessUser>()
+        {
+            @Override
+            public void handleResponse( BackendlessUser loggedInUser )
+            {
+                Log.i("Inbox", "Adding Friend");
+            }
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+                System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+            }
+        };
+
+        Backendless.Data.of( BackendlessUser.class ).find(new AsyncCallback<BackendlessCollection<BackendlessUser>>() {
+            @Override
+            public void handleResponse(BackendlessCollection<BackendlessUser> users) {
+                Iterator<BackendlessUser> userIterator = users.getCurrentPage().iterator();
+
+                while (userIterator.hasNext()) {
+                    BackendlessUser user = userIterator.next();
+
+                    if (from.equals(user.getProperty("name").toString())) {
+                        mFriend = user;
+                    }
                 }
+                Log.i("addFriend", "Friendfound");
+                BackendlessUser[] friends = (BackendlessUser[])Backendless.UserService.CurrentUser().getProperty("friends");
+                BackendlessUser[] newFriends = new BackendlessUser[friends.length + 1];
+                newFriends = friends.clone();
+                newFriends[friends.length] = mFriend;
+                //friends[0] = mFriend;
+                Backendless.UserService.CurrentUser().setProperty("friends", newFriends);
+                Backendless.Data.of( BackendlessUser.class ).save(Backendless.UserService.CurrentUser(), callback);
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault backendlessFault) {
+                System.out.println("Server reported an error - " + backendlessFault.getMessage());
             }
         });
+        //return mFriend;
     }
+
 
     private void setClickListener(){
         requestView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -165,25 +196,37 @@ public class InboxFragment extends Fragment {
     }
 
     private void getSentPics(){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("SentPicture");
-        query.whereEqualTo("To", ParseUser.getCurrentUser().getUsername());
-        query.findInBackground(new FindCallback<ParseObject>() {
+        AsyncCallback<BackendlessCollection<SentPicture>> callback=new AsyncCallback<BackendlessCollection<SentPicture>>()
+        {
             @Override
-            public void done(List<ParseObject> list, com.parse.ParseException e) {
-                if (e == null) {
-                    fillSentPics(list);
-                    displayPics();
-                } else {
-                    Toast.makeText(getActivity(), "No Pictures Found", Toast.LENGTH_SHORT);
-                    Log.e("Inbox", "getPicsError: " + e.getMessage());
+            public void handleResponse( BackendlessCollection<SentPicture> pics )
+            {
+                Iterator<SentPicture> iterator=pics.getCurrentPage().iterator();
+
+                while( iterator.hasNext() )
+                {
+                    SentPicture pic =iterator.next();
+                    if(pic.getTo().equals(Backendless.UserService.CurrentUser().getProperty("name").toString())) {
+                        receivedPictures.add(pic);
+                    }
                 }
+                fillSentPics();
+                displayPics();
             }
-        });
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+
+            }
+        };
+
+        Backendless.Data.of( SentPicture.class ).find(callback);
     }
 
-    private void fillSentPics(List<ParseObject> list){
-        for(ParseObject ob: list){
-            picArrayStrings.add(ob.get("From").toString());
+   private void fillSentPics(){
+        for(SentPicture pic: receivedPictures){
+            picArrayStrings.add(pic.getFrom());
         }
         if(picArrayStrings == null){
             picArrayStrings.add("No Pending Friend Requests");
@@ -205,10 +248,11 @@ public class InboxFragment extends Fragment {
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
 
-                acceptRequest(from);
+                //acceptRequest(from);
+                addFriend(from);
+
                 dialog.cancel();
 
-                // Do something with value!
             }
         });
 
@@ -221,57 +265,104 @@ public class InboxFragment extends Fragment {
         alert.show();
     }
 
-    private void acceptPic(String from){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("SentPicture");
-        query.whereEqualTo("To", ParseUser.getCurrentUser().getUsername());
-        query.whereEqualTo("From", from);
-        query.getFirstInBackground(new GetCallback<ParseObject>() {
+    private void acceptPic(final String from){
+        AsyncCallback<BackendlessCollection<SentPicture>> callback=new AsyncCallback<BackendlessCollection<SentPicture>>()
+        {
             @Override
-            public void done(ParseObject parseObject, com.parse.ParseException e) {
-                if (e == null) {
-                    viewPic(parseObject.getParseFile("Picture"));
-                    try {
-                        parseObject.delete();
-                    } catch (com.parse.ParseException e1) {
-                        e1.printStackTrace();
+            public void handleResponse( BackendlessCollection<SentPicture> pics )
+            {
+                Iterator<SentPicture> iterator=pics.getCurrentPage().iterator();
+
+                while( iterator.hasNext() )
+                {
+                    SentPicture pic =iterator.next();
+                    if(pic.getTo().equals(Backendless.UserService.CurrentUser().getProperty("name").toString()) && pic.getFrom().equals(from)) {
+                        /***********************************************************
+                        If we want to add deleting viewed picutres feature it should go here
+                         **********************************************************/
+
+                        String fileName = "https://develop.backendless.com/#Snapchat/v1/main/files/mypics/" + pic.getPicLocation();
+                        String[] str = new String[1];
+                        str[0] = fileName;
+                        //downloadFile(fileName);
+                        DownloadImageTask task = new DownloadImageTask();
+                        task.execute(str);
+                        try {
+                            Bitmap bmp = (Bitmap)task.get(30, TimeUnit.SECONDS);
+                            makePicPopup(bmp);
+                        }catch(Exception e){
+                            Log.i("Inbox", "HandleResponseError" + e);
+                        }
+                        return;
                     }
-                } else {
-                    Log.e("Inbox", "InboxError: " + e.getMessage());
                 }
+
             }
-        });
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+
+            }
+        };
+
+        Backendless.Data.of( SentPicture.class ).find(callback);
+
     }
 
-    private void viewPic(ParseFile pic){
-        if(pic != null){
-            makePicPopup(pic);
+    /*public void downloadFile(String fileURL) {
+        try {
+            URL url = new URL(fileURL);
+            HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+            int responseCode = httpConn.getResponseCode();
 
+            // always check HTTP response code first
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                Log.i("downloadFile", "Successfully downloaded");
+
+                int contentLength = httpConn.getContentLength();
+                // opens input stream from the HTTP connection
+                InputStream inputStream = httpConn.getInputStream();
+
+                Bitmap bmp = BitmapFactory.decodeStream(inputStream);
+                makePicPopup(bmp);
+
+                inputStream.close();
+
+            } else {
+                System.out.println("No file to download. Server replied HTTP code: " + responseCode);
+            }
+
+            httpConn.disconnect();
+        }catch (IOException e){
+            Log.e("downloadfile", "IO exception " + e);
+        }
+
+    }*/
+
+    private void makePicPopup(Bitmap bmp){
+        if(bmp != null) {
+            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+            ImageView image = new ImageView(getActivity());
+
+            alert.setView(image);
+            image.setImageBitmap(bmp);
+
+            alert.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    dialog.cancel();
+                    getActivity().finish();
+                }
+            });
+
+            alert.show();
+        }else{
+            Log.i("makePicPopup", "Error loading image");
         }
     }
 
-    private void makePicPopup(ParseFile pic){
-        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-        final ParseImageView image = new ParseImageView(getActivity());
-        alert.setView(image);
-
-        image.setParseFile(pic);
-        image.loadInBackground(new GetDataCallback() {
-            @Override
-            public void done(byte[] bytes, com.parse.ParseException e) {
-
-            }
-        });
-
-        alert.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dialog.cancel();
-                getActivity().finish();
-            }
-        });
-
-        alert.show();
-    }
 
     @Override
     public void onResume() {
