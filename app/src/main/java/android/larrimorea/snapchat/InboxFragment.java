@@ -292,7 +292,7 @@ public class InboxFragment extends Fragment {
                         If we want to add deleting viewed picutres feature it should go here
                          **********************************************************/
 
-                        String fileName = "https://develop.backendless.com/#Snapchat/v1/main/files/mypics/" + pic.getPicLocation();
+                        String fileName = "https://develop.backendless.com/console/60001609-65BC-FFE7-FF49-6609EF9E0C00/appversion/FB26B1D8-E700-FA56-FF36-8C1097AE7300/zxrqabgugfpuzeqqzqhmuiicuymbdubtpnhw/files/view/mypics/" + pic.getPicLocation();
                         String[] str = new String[1];
                         str[0] = fileName;
                         //downloadFile(fileName);
@@ -301,6 +301,7 @@ public class InboxFragment extends Fragment {
                         try {
                             Bitmap bmp = (Bitmap)task.get(30, TimeUnit.SECONDS);
                             makePicPopup(bmp);
+
                         }catch(Exception e){
                             Log.i("Inbox", "HandleResponseError" + e);
                         }
@@ -320,36 +321,6 @@ public class InboxFragment extends Fragment {
         Backendless.Data.of( SentPicture.class ).find(callback);
 
     }
-
-    /*public void downloadFile(String fileURL) {
-        try {
-            URL url = new URL(fileURL);
-            HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
-            int responseCode = httpConn.getResponseCode();
-
-            // always check HTTP response code first
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                Log.i("downloadFile", "Successfully downloaded");
-
-                int contentLength = httpConn.getContentLength();
-                // opens input stream from the HTTP connection
-                InputStream inputStream = httpConn.getInputStream();
-
-                Bitmap bmp = BitmapFactory.decodeStream(inputStream);
-                makePicPopup(bmp);
-
-                inputStream.close();
-
-            } else {
-                System.out.println("No file to download. Server replied HTTP code: " + responseCode);
-            }
-
-            httpConn.disconnect();
-        }catch (IOException e){
-            Log.e("downloadfile", "IO exception " + e);
-        }
-
-    }*/
 
     private void makePicPopup(Bitmap bmp){
         if(bmp != null) {
