@@ -79,7 +79,18 @@ public class SendPictureFragment extends Fragment {
 
                     if(user.getProperty("name").toString().equals(Backendless.UserService.CurrentUser().getProperty("name").toString())){
                         Log.i("User found", user.getProperty("name").toString());
-                        BackendlessUser[] friends = (BackendlessUser[])user.getProperty("friends");
+                        Object[] temp = (Object[])user.getProperty("friends");
+                        final BackendlessUser[] friends;
+
+                        //IF FRIENDS LIST IS EMPTY IT CAN'T BE CAST TO A BACKENDLESS USER ARRAY
+                        if(temp.length > 0 ) {
+                            friends = (BackendlessUser[]) user.getProperty("friends");
+                            Log.i("SendPic: getFriends", "Friends found:)");
+                        }else{
+                            friends = new BackendlessUser[0];
+                            Log.i("SendPic: getFriends", "No friends found?");
+                        }
+
                         for(BackendlessUser friend: friends){
                             Log.i("Responder2b", friend.getProperty("name").toString());
                             friendsList.add(friend);

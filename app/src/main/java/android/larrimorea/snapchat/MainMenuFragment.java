@@ -21,6 +21,8 @@ import com.backendless.BackendlessCollection;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.backendless.persistence.BackendlessDataQuery;
+import com.backendless.persistence.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,9 +38,11 @@ public class MainMenuFragment extends Fragment{
     private ArrayAdapter<String> mAdapter;
     private String[] inArrayStrings;
     private String[] outArrayStrings;
+    private BackendlessUser[] newFriends;
     private BackendlessUser mFriend;
     private boolean pause = false;
     private boolean friendFound = false;
+
 
     @Nullable
     @Override
@@ -59,6 +63,7 @@ public class MainMenuFragment extends Fragment{
 
         listView = (ListView) view.findViewById(R.id.listView);
 
+
         setMenu();
 
         return view;
@@ -70,47 +75,7 @@ public class MainMenuFragment extends Fragment{
         pause = false;
     }
 
-    private void deleteRequests() {
-        final AsyncCallback<Long> deleteResponder = new AsyncCallback<Long>()
-        {
-            @Override
-            public void handleResponse( Long timestamp )
-            {
-            }
 
-            @Override
-            public void handleFault( BackendlessFault backendlessFault )
-            {
-
-            }
-        };
-
-        AsyncCallback<BackendlessCollection<FriendRequests>> callback=new AsyncCallback<BackendlessCollection<FriendRequests>>()
-        {
-            @Override
-            public void handleResponse( BackendlessCollection<FriendRequests> reqs )
-            {
-                Iterator<FriendRequests> iterator=reqs.getCurrentPage().iterator();
-
-                while( iterator.hasNext() )
-                {
-                    FriendRequests requests =iterator.next();
-                    if(requests.getTo().equals(Backendless.UserService.CurrentUser().getProperty("name").toString()) && requests.isAccepted() == true) {
-                        Backendless.Data.of(FriendRequests.class).remove(requests, deleteResponder);
-                    }
-                }
-            }
-
-            @Override
-            public void handleFault( BackendlessFault backendlessFault )
-            {
-
-            }
-        };
-
-        Backendless.Data.of( FriendRequests.class ).find(callback);
-
-    }
 
     public void setMenu(){
         if(loggedIn) {
@@ -126,6 +91,8 @@ public class MainMenuFragment extends Fragment{
         }catch(InterruptedException e){
             Log.e("LoggedIn error", "Error: " + e);
         }
+
+        deleteRequests();
 
         mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, inArrayStrings);
         listView.setAdapter(mAdapter);
@@ -156,7 +123,6 @@ public class MainMenuFragment extends Fragment{
     }
 
    private void updateFriends() throws InterruptedException{
-       friendFound = false;
            AsyncCallback<BackendlessCollection<FriendRequests>> callback=new AsyncCallback<BackendlessCollection<FriendRequests>>()
            {
                @Override
@@ -170,18 +136,8 @@ public class MainMenuFragment extends Fragment{
                        FriendRequests requests =iterator.next();
                        if(requests.getFrom().equals(curUser.getProperty("name").toString()) && requests.isAccepted() == true){
                            System.out.println("Found accepted request!");
-                           ArrayList<BackendlessUser> friends = new ArrayList<BackendlessUser>();
-                           BackendlessUser newFriend = findFriend(requests.getTo().toString());
-                           friends.add(newFriend);
-                           Log.i("updateFriends", "saving friend");
-                           curUser.setProperty("friends", friends);
-                           Backendless.Data.of( BackendlessUser.class ).save(curUser);
-                           friendFound = true;
+                           addFriend(requests.getTo().toString());
                        }
-                   }
-                   if(friendFound) {
-                       Log.i("updateFriends", "deleting request");
-                       deleteRequests();
                    }
 
                }
@@ -196,21 +152,83 @@ public class MainMenuFragment extends Fragment{
            Backendless.Data.of( FriendRequests.class ).find(callback);
     }
 
-    public BackendlessUser findFriend(final String to){
-        mFriend = null;
-        Backendless.Data.of( BackendlessUser.class ).find( new AsyncCallback<BackendlessCollection<BackendlessUser>>()
+    public void addFriend(final String to){
+        final BackendlessUser curUser = Backendless.UserService.CurrentUser();
+        newFriends = null;
+
+        final AsyncCallback<BackendlessCollection<BackendlessUser>> responder = new AsyncCallback<BackendlessCollection<BackendlessUser>>()
         {
             @Override
-            public void handleResponse( BackendlessCollection<BackendlessUser> users )
-            {
-                Iterator<BackendlessUser> userIterator = users.getCurrentPage().iterator();
+            public void handleResponse(BackendlessCollection<BackendlessUser> backendlessUserBackendlessCollection) {
+                Iterator<BackendlessUser> userIterator = backendlessUserBackendlessCollection.getCurrentPage().iterator();
 
-                while( userIterator.hasNext() )
-                {
+                while( userIterator.hasNext() ){
+
                     BackendlessUser user = userIterator.next();
 
-                    if(to.equals(user.getProperty("name").toString())){
-                        mFriend = user;
+                    //ONCE FRIENDS LIST IS LOADED, LOOKING THROUGH USERS TO FIND  CURRENT USER
+                    if(user.getProperty("name").toString().equals(curUser.getProperty("name").toString())){
+                        Log.i("User found", user.getProperty("name").toString());
+                        Object[] temp = (Object[])user.getProperty("friends");
+
+                        final BackendlessUser[] friends;
+
+                        //IF FRIENDS LIST IS EMPTY IT CAN'T BE CAST TO A BACKENDLESS USER ARRAY
+                        if(temp.length > 0 ) {
+                            friends = (BackendlessUser[]) user.getProperty("friends");
+                            Log.i("Friends", "Friends found:)");
+                        }else{
+                            friends = new BackendlessUser[0];
+                            Log.i("Friends", "No friends found?");
+                        }
+
+                        //NEED TO FIND THE NEW FRIEND IN THE FRIENDS LIST
+                        Backendless.Data.of( BackendlessUser.class ).find(new AsyncCallback<BackendlessCollection<BackendlessUser>>() {
+                            @Override
+                            public void handleResponse(BackendlessCollection<BackendlessUser> users) {
+                                Iterator<BackendlessUser> userIterator = users.getCurrentPage().iterator();
+
+                                while (userIterator.hasNext()) {
+                                    BackendlessUser user1 = userIterator.next();
+
+                                    if (to.equals(user1.getProperty("name").toString())) {
+                                        newFriends = new BackendlessUser[friends.length + 1];
+
+                                        for (int i = 0; i < friends.length; i++) {
+                                            newFriends[i] = friends[i];
+                                        }
+                                        newFriends[friends.length] = user1;
+
+                                    }
+                                }
+                                //DONT NEED TO KEEP THIS, JUST PRINTS OUT THE UPDATED FRIENDS LIST IF YOU THINK STUDENTS WANT TO SEE IT
+                                for (int i = 0; i < newFriends.length; i++) {
+                                    Log.i("Friends List to Save: ", newFriends[i].getProperty("name").toString());
+
+                                }
+                                curUser.setProperty("friends", newFriends);
+
+                                Backendless.UserService.update(curUser, new AsyncCallback<BackendlessUser>() {
+                                    @Override
+                                    public void handleResponse(BackendlessUser backendlessUser) {
+                                        Log.i("Inbox", "Add friend: User updated!");
+                                        deleteRequests();
+                                    }
+
+                                    @Override
+                                    public void handleFault(BackendlessFault backendlessFault) {
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void handleFault(BackendlessFault backendlessFault) {
+                                System.out.println("Server reported an error - " + backendlessFault.getMessage());
+                            }
+                        });
+
+
                     }
                 }
             }
@@ -218,11 +236,65 @@ public class MainMenuFragment extends Fragment{
             @Override
             public void handleFault( BackendlessFault backendlessFault )
             {
-                System.out.println( "Server reported an error - " + backendlessFault.getMessage() );
+                Log.e("GetFRIENDs", "ERROR");
             }
-        } );
+        };
 
-        return mFriend;
+        //NEED TO LOAD THE FRIENDS LIST USING THIS CODE AND WORK WITH IT IN THE RESPONDER UP ABOVE^^^^
+        BackendlessDataQuery query = new BackendlessDataQuery();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.addRelated("friends");
+        query.setQueryOptions(queryOptions);
+        Backendless.Data.of( BackendlessUser.class ).find(query, responder);
+    }
+
+    private void deleteRequests() {
+
+        AsyncCallback<BackendlessCollection<FriendRequests>> callback=new AsyncCallback<BackendlessCollection<FriendRequests>>()
+        {
+            @Override
+            public void handleResponse( BackendlessCollection<FriendRequests> reqs )
+            {
+                Iterator<FriendRequests> iterator=reqs.getCurrentPage().iterator();
+
+                while( iterator.hasNext() )
+                {
+                    FriendRequests requests =iterator.next();
+                    if(requests.getFrom().equals(Backendless.UserService.CurrentUser().getProperty("name").toString()) && requests.isAccepted() == true) {
+                        Backendless.Persistence.save( requests, new AsyncCallback<FriendRequests>() {
+                            public void handleResponse( FriendRequests delRequest )
+                            {
+                                Backendless.Persistence.of(FriendRequests.class).remove(delRequest, new AsyncCallback<Long>() {
+                                    @Override
+                                    public void handleResponse(Long aLong) {
+                                    }
+
+                                    @Override
+                                    public void handleFault(BackendlessFault backendlessFault) {
+
+                                    }
+                                });
+                            }
+                            @Override
+                            public void handleFault( BackendlessFault fault )
+                            {
+                                // an error has occurred, the error code can be retrieved with fault.getCode()
+                            }
+                        });
+
+                    }
+                }
+            }
+
+            @Override
+            public void handleFault( BackendlessFault backendlessFault )
+            {
+
+            }
+        };
+
+        Backendless.Data.of( FriendRequests.class ).find(callback);
+
     }
 
     public void loggedOut(){
